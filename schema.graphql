@@ -1,0 +1,154 @@
+type Vault @entity {
+  
+  id: ID! # 1
+  
+  createdAtTimestamp: BigInt!
+  createdAtBlockNumber: BigInt!
+
+  updatedAtTimestamp: BigInt
+  updatedAtBlockNumber: BigInt
+
+  cap: BigInt!
+  balance: BigInt
+  staked: BigInt
+  stakingPeriod: BigInt!
+  redemptionPeriod: BigInt!
+  maxDailyDrawdown: BigInt!
+
+  cumulativePnl: BigInt
+  cumulativeVolume: BigInt
+  cumulativeMargin: BigInt
+
+  positionCount: BigInt
+  tradeCount: BigInt
+
+}
+
+type Product @entity {
+  id: ID! # product id
+
+  feed: Bytes!
+  maxLeverage: BigInt!
+  fee: BigInt!
+
+  isActive: Boolean!
+
+  maxExposure: BigInt!
+  openInterestLong: BigInt!
+  openInterestShort: BigInt!
+
+  interest: BigInt!
+  settlementTime: BigInt!
+  minTradeDuration: BigInt!
+
+  liquidationThreshold: BigInt!
+  liquidationBounty: BigInt!
+
+  cumulativePnl: BigInt
+  cumulativeVolume: BigInt
+  cumulativeMargin: BigInt
+
+  positionCount: BigInt
+  tradeCount: BigInt
+
+  createdAtTimestamp: BigInt
+  createdAtBlockNumber: BigInt
+
+  updatedAtTimestamp: BigInt
+  updatedAtBlockNumber: BigInt
+
+}
+
+type Position @entity { # open position
+
+  id: ID! # position ID
+
+  productId: BigInt!
+  leverage: BigInt!
+  price: BigInt!
+  margin: BigInt!
+
+  amount: BigInt
+
+  owner: Bytes!
+
+  liquidationPrice: BigInt
+  
+  isLong: Boolean!
+  isSettling: Boolean!
+
+  createdAtTimestamp: BigInt!
+  createdAtBlockNumber: BigInt!
+  
+  settledAtTimestamp: BigInt
+  settledAtBlockNumber: BigInt
+
+  updatedAtTimestamp: BigInt
+  updatedAtBlockNumber: BigInt
+
+}
+
+type Trade @entity { # closed position
+
+  id: ID! # unique: vault.tradeCount.toString()
+
+  txHash: String! # event.transaction.hash.toHexString()
+
+  positionId: BigInt!
+
+  owner: Bytes!
+
+  productId: BigInt!
+  margin: BigInt!
+  leverage: BigInt!
+
+  amount: BigInt
+  
+  entryPrice: BigInt!
+  closePrice: BigInt!
+
+  isLong: Boolean!
+  
+  pnl: BigInt!
+
+  pnlIsNegative: Boolean!
+  wasLiquidated: Boolean!
+  isFullClose: Boolean!
+
+  timestamp: BigInt!
+  blockNumber: BigInt!
+
+}
+
+type VaultDayData @entity {
+
+  id: ID! # day id = event.block.timestamp / 86400 see https://github.com/Uniswap/uniswap-v3-subgraph/blob/1593a62059589bb1266d19bf18c5fa08fb68fe63/src/utils/intervalUpdates.ts#L43
+
+  date: BigInt! # dayStartTimestamp = dayID * 86400
+
+  cumulativePnl: BigInt
+  cumulativeVolume: BigInt
+  cumulativeMargin: BigInt
+
+  positionCount: BigInt
+  tradeCount: BigInt
+
+}
+
+type Stake @entity {
+
+  id: ID! #stakeId
+
+  owner: Bytes
+  amount: BigInt
+  timestamp: BigInt
+
+}
+
+#type User @entity {
+#  id: ID! # trader address, to fetch / mappings see https://github.com/perpetual-protocol/perp-position-subgraph/blob/master/src/mappings/helper.ts#L133
+#}
+
+#type UserDayData @entity {
+# id: ID! # id is trader id + day id. See https://github.com/perpetual-protocol/perp-position-subgraph/blob/master/src/mappings/helper.ts#L141. then you just fetch it and update it: https://github.com/perpetual-protocol/perp-position-subgraph/blob/master/src/mappings/clearingHouse.ts#L119 
+#}

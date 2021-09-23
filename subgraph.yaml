@@ -1,0 +1,56 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: Trading
+    network: arbitrum-one
+    source:
+      address: "0x9BC357bc5b312AaCD41a84F3C687F031B8786853"
+      abi: Trading
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AddMargin
+        - ClosePosition
+        - NewPosition
+        - NewPositionSettled
+        - OwnerUpdated
+        - PositionLiquidated
+        - ProductAdded
+        - ProductUpdated
+        - ProtocolFeeUpdated
+        - Redeemed
+        - Staked
+        - VaultUpdated
+      abis:
+        - name: Trading
+          file: ./abis/Trading.json
+      eventHandlers:
+        - event: AddMargin(indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handleAddMargin
+        - event: ClosePosition(uint256,indexed address,indexed uint256,indexed bool,uint256,uint256,uint256,uint256,uint256,bool,bool)
+          handler: handleClosePosition
+        - event: NewPosition(indexed uint256,indexed address,indexed uint256,bool,uint256,uint256,uint256)
+          handler: handleNewPosition
+        - event: NewPositionSettled(indexed uint256,indexed address,uint256)
+          handler: handleNewPositionSettled
+        - event: OwnerUpdated(address)
+          handler: handleOwnerUpdated
+        - event: PositionLiquidated(indexed uint256,indexed address,uint256,uint256)
+          handler: handlePositionLiquidated
+        - event: ProductAdded(uint256,(address,uint72,uint16,bool,uint64,uint48,uint48,uint16,uint32,uint16,uint16,uint16))
+          handler: handleProductAdded
+        - event: ProductUpdated(uint256,(address,uint72,uint16,bool,uint64,uint48,uint48,uint16,uint32,uint16,uint16,uint16))
+          handler: handleProductUpdated
+        - event: ProtocolFeeUpdated(uint256)
+          handler: handleProtocolFeeUpdated
+        - event: Redeemed(uint256,indexed address,uint256,bool)
+          handler: handleRedeemed
+        - event: Staked(uint256,indexed address,uint256)
+          handler: handleStaked
+        - event: VaultUpdated((uint96,uint96,uint64,uint80,uint80,uint32,uint32,uint32))
+          handler: handleVaultUpdated
+      file: ./src/mapping.ts

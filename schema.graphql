@@ -1,7 +1,7 @@
 type Vault @entity {
-  
+
   id: ID! # 1
-  
+
   createdAtTimestamp: BigInt!
   createdAtBlockNumber: BigInt!
 
@@ -57,6 +57,7 @@ type Product @entity {
   updatedAtTimestamp: BigInt
   updatedAtBlockNumber: BigInt
 
+  reserve: BigInt
 }
 
 type Position @entity { # open position
@@ -73,13 +74,13 @@ type Position @entity { # open position
   owner: Bytes!
 
   liquidationPrice: BigInt
-  
+
   isLong: Boolean!
   isSettling: Boolean!
 
   createdAtTimestamp: BigInt!
   createdAtBlockNumber: BigInt!
-  
+
   settledAtTimestamp: BigInt
   settledAtBlockNumber: BigInt
 
@@ -103,12 +104,12 @@ type Trade @entity { # closed position
   leverage: BigInt!
 
   amount: BigInt
-  
+
   entryPrice: BigInt!
   closePrice: BigInt!
 
   isLong: Boolean!
-  
+
   pnl: BigInt!
 
   pnlIsNegative: Boolean!
@@ -150,5 +151,5 @@ type Stake @entity {
 #}
 
 #type UserDayData @entity {
-# id: ID! # id is trader id + day id. See https://github.com/perpetual-protocol/perp-position-subgraph/blob/master/src/mappings/helper.ts#L141. then you just fetch it and update it: https://github.com/perpetual-protocol/perp-position-subgraph/blob/master/src/mappings/clearingHouse.ts#L119 
+# id: ID! # id is trader id + day id. See https://github.com/perpetual-protocol/perp-position-subgraph/blob/master/src/mappings/helper.ts#L141. then you just fetch it and update it: https://github.com/perpetual-protocol/perp-position-subgraph/blob/master/src/mappings/clearingHouse.ts#L119
 #}

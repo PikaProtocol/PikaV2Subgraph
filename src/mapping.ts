@@ -1,6 +1,6 @@
 import { BigInt, store, log, ethereum } from "@graphprotocol/graph-ts"
 import {
-  Trading,
+  PikaPerpV2,
   AddMargin,
   ClosePosition,
   NewPosition,
@@ -13,7 +13,7 @@ import {
   Redeemed,
   Staked,
   VaultUpdated
-} from "../generated/Trading/Trading"
+} from "../generated/PikaPerpV2/PikaPerpV2"
 import { Vault, Product, Position, Trade, VaultDayData, Stake } from "../generated/schema"
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
@@ -104,6 +104,7 @@ export function handleNewPositionSettled(event: NewPositionSettled): void {
 
     position.settledAtTimestamp = event.block.timestamp
     position.settledAtBlockNumber = event.block.number
+    position.isSettling
 
     let product = Product.load((position.productId).toString())
 
@@ -182,13 +183,13 @@ export function handleClosePosition(event: ClosePosition): void {
     // create new trade
     let trade = new Trade(vault.tradeCount.toString())
     trade.txHash = event.transaction.hash.toHexString()
-    
+
     trade.positionId = event.params.positionId
     trade.productId = event.params.productId
     trade.leverage = event.params.leverage
 
     trade.amount = amount
-    
+
     trade.entryPrice = event.params.entryPrice
     trade.closePrice = event.params.price
 
@@ -276,7 +277,7 @@ export function handleProductAdded(event: ProductAdded): void {
 
     product.createdAtTimestamp = event.block.timestamp
     product.createdAtBlockNumber = event.block.number
-    
+
     product.cumulativePnl = ZERO_BI
     product.cumulativeVolume = ZERO_BI
     product.cumulativeMargin = ZERO_BI
@@ -290,7 +291,7 @@ export function handleProductAdded(event: ProductAdded): void {
 
     product.isActive = true
     product.maxExposure = event.params.product.maxExposure
-    
+
     product.openInterestLong = ZERO_BI
     product.openInterestShort = ZERO_BI
 
@@ -347,7 +348,7 @@ export function handleVaultUpdated(event: VaultUpdated): void {
 
     vault.balance = ZERO_BI
     vault.staked = ZERO_BI
-    
+
     vault.cumulativePnl = ZERO_BI
     vault.cumulativeVolume = ZERO_BI
     vault.cumulativeMargin = ZERO_BI
@@ -402,7 +403,7 @@ export function handleRedeemed(event: Redeemed): void {
     store.remove('Stake', event.params.stakeId.toString())
   } else {
     stake.amount = stake.amount.minus(event.params.amount)
-    stake.save() 
+    stake.save()
   }
 
 }

@@ -1,16 +1,16 @@
 {
-  "name": "cap-v1",
+  "name": "PikaPerpV2",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ cap-v1",
-    "create-local": "graph create --node http://localhost:8020/ cap-v1",
-    "remove-local": "graph remove --node http://localhost:8020/ cap-v1",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 cap-v1"
+    "deploy": "graph deploy --node https://api.studio.thegraph.com/deploy/ PikaPerpV2",
+    "create-local": "graph create --node http://localhost:8020/ PikaPerpV2",
+    "remove-local": "graph remove --node http://localhost:8020/ PikaPerpV2",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 PikaPerpV2"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "0.21.1",
+    "@graphprotocol/graph-cli": "^0.21.0",
     "@graphprotocol/graph-ts": "0.20.0"
   }
 }

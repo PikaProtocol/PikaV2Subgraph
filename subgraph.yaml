@@ -4,7 +4,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: PikaPerpV2
-    network: arbitrum-one
+    network: kovan
     source:
       address: "0xa22f22EF9689D76D17854a9f681Ffc0a2c6787b0"
       abi: PikaPerpV2

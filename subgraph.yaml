@@ -6,7 +6,7 @@ dataSources:
     name: PikaPerpV2
     network: kovan
     source:
-      address: "0xa22f22EF9689D76D17854a9f681Ffc0a2c6787b0"
+      address: "0xa5DDF1c2Db45e5af120450bdaae553BD5F8472A6"
       abi: PikaPerpV2
     mapping:
       kind: ethereum/events
@@ -16,7 +16,6 @@ dataSources:
         - AddMargin
         - ClosePosition
         - NewPosition
-        - NewPositionSettled
         - OwnerUpdated
         - PositionLiquidated
         - ProductAdded
@@ -33,24 +32,22 @@ dataSources:
           handler: handleAddMargin
         - event: ClosePosition(uint256,indexed address,indexed uint256,indexed bool,uint256,uint256,uint256,uint256,uint256,bool,bool)
           handler: handleClosePosition
-        - event: NewPosition(indexed uint256,indexed address,indexed uint256,bool,uint256,uint256,uint256,bool)
+        - event: NewPosition(indexed uint256,indexed address,indexed uint256,bool,uint256,uint256,uint256,uint256)
           handler: handleNewPosition
-        - event: NewPositionSettled(indexed uint256,indexed address,uint256)
-          handler: handleNewPositionSettled
         - event: OwnerUpdated(address)
           handler: handleOwnerUpdated
-        - event: PositionLiquidated(indexed uint256,indexed address,uint256,uint256)
+        - event: PositionLiquidated(indexed uint256,indexed address,uint256,uint256,uint256)
           handler: handlePositionLiquidated
-        - event: ProductAdded(uint256,(address,uint72,uint16,bool,uint64,uint48,uint48,uint16,uint32,uint16,uint16,uint16,uint32))
+        - event: ProductAdded(uint256,(address,uint72,uint16,bool,uint64,uint64,uint64,uint16,uint16,uint16,uint16,uint64))
           handler: handleProductAdded
-        - event: ProductUpdated(uint256,(address,uint72,uint16,bool,uint64,uint48,uint48,uint16,uint32,uint16,uint16,uint16,uint32))
+        - event: ProductUpdated(uint256,(address,uint72,uint16,bool,uint64,uint64,uint64,uint16,uint16,uint16,uint16,uint64))
           handler: handleProductUpdated
         - event: ProtocolFeeUpdated(uint256)
           handler: handleProtocolFeeUpdated
-        - event: Redeemed(uint256,indexed address,uint256,bool)
+        - event: Redeemed(uint256,indexed address,uint256,uint256,uint256,bool)
           handler: handleRedeemed
-        - event: Staked(uint256,indexed address,uint256)
+        - event: Staked(uint256,indexed address,uint256,uint256)
           handler: handleStaked
-        - event: VaultUpdated((uint96,uint96,uint64,uint80,uint80,uint32,uint32,uint32))
+        - event: VaultUpdated((uint96,uint96,uint64,uint64,uint80,uint80,uint32,uint32,uint32))
           handler: handleVaultUpdated
       file: ./src/mapping.ts

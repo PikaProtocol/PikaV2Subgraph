@@ -4,7 +4,6 @@ import {
   AddMargin,
   ClosePosition,
   NewPosition,
-  NewPositionSettled,
   OwnerUpdated,
   PositionLiquidated,
   ProductAdded,
@@ -43,13 +42,15 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
 }
 
 export function handleNewPosition(event: NewPosition): void {
-
   // Create position
-  let position = new Position(event.params.positionId.toString())
-
+  let position = Position.load(event.params.positionId.toString())
+  if (!position) {
+    position = new Position(event.params.positionId.toString())
+  }
   position.productId = event.params.productId
   position.leverage = event.params.leverage
   position.price = event.params.price
+  position.oraclePrice = event.params.oraclePrice
   position.margin = event.params.margin
 
   let amount = event.params.margin.times(event.params.leverage).div(UNIT_BI)
@@ -58,12 +59,19 @@ export function handleNewPosition(event: NewPosition): void {
   position.owner = event.params.user
 
   position.isLong = event.params.isLong
-  position.isSettling = true
 
   position.createdAtTimestamp = event.block.timestamp
   position.createdAtBlockNumber = event.block.number
 
+  // Update liquidation price
   let product = Product.load((event.params.productId).toString())
+  let liquidationPrice = ZERO_BI
+  if (position.isLong) {
+    liquidationPrice = position.price.minus((position.price.times(product.liquidationThreshold).times(BigInt.fromI32(10000))).div(position.leverage))
+  } else {
+    liquidationPrice = position.price.plus((position.price.times(product.liquidationThreshold).times(BigInt.fromI32(10000))).div(position.leverage))
+  }
+  position.liquidationPrice = liquidationPrice
 
   // volume updates
   let vault = Vault.load((1).toString())
@@ -90,36 +98,6 @@ export function handleNewPosition(event: NewPosition): void {
   vault.save()
   vaultDayData.save()
   product.save()
-
-}
-
-export function handleNewPositionSettled(event: NewPositionSettled): void {
-
-  let position = Position.load(event.params.positionId.toString())
-
-  if (position) {
-
-    position.price = event.params.price
-    position.isSettling = false
-
-    position.settledAtTimestamp = event.block.timestamp
-    position.settledAtBlockNumber = event.block.number
-    position.isSettling
-
-    let product = Product.load((position.productId).toString())
-
-    let liquidationPrice = ZERO_BI
-    if (position.isLong) {
-      liquidationPrice = position.price.minus((position.price.times(product.liquidationThreshold).times(BigInt.fromI32(10000))).div(position.leverage))
-    } else {
-      liquidationPrice = position.price.plus((position.price.times(product.liquidationThreshold).times(BigInt.fromI32(10000))).div(position.leverage))
-    }
-
-    position.liquidationPrice = liquidationPrice
-
-    position.save()
-
-  }
 
 }
 
@@ -296,10 +274,12 @@ export function handleProductAdded(event: ProductAdded): void {
     product.openInterestShort = ZERO_BI
 
     product.interest = BigInt.fromI32(event.params.product.interest)
-    product.settlementTime = event.params.product.settlementTime
     product.minTradeDuration = BigInt.fromI32(event.params.product.minTradeDuration)
     product.liquidationThreshold = BigInt.fromI32(event.params.product.liquidationThreshold)
     product.liquidationBounty = BigInt.fromI32(event.params.product.liquidationBounty)
+    log.info("event.params.product.{}", [event.params.product.toString()])
+    log.info("event.params.product.{}", [event.params.product.reserve.toString()])
+    product.reserve = event.params.product.reserve
 
     product.save()
 
@@ -324,10 +304,10 @@ export function handleProductUpdated(event: ProductUpdated): void {
     product.maxExposure = event.params.product.maxExposure
 
     product.interest = BigInt.fromI32(event.params.product.interest)
-    product.settlementTime = event.params.product.settlementTime
     product.minTradeDuration = BigInt.fromI32(event.params.product.minTradeDuration)
     product.liquidationThreshold = BigInt.fromI32(event.params.product.liquidationThreshold)
     product.liquidationBounty = BigInt.fromI32(event.params.product.liquidationBounty)
+    product.reserve = event.params.product.reserve
 
     product.save()
 
@@ -348,6 +328,7 @@ export function handleVaultUpdated(event: VaultUpdated): void {
 
     vault.balance = ZERO_BI
     vault.staked = ZERO_BI
+    vault.shares = ZERO_BI
 
     vault.cumulativePnl = ZERO_BI
     vault.cumulativeVolume = ZERO_BI
@@ -377,6 +358,7 @@ export function handleStaked(event: Staked): void {
   let vault = Vault.load((1).toString())
   vault.balance = vault.balance.plus(event.params.amount)
   vault.staked = vault.staked.plus(event.params.amount)
+  vault.shares = vault.shares.plus(event.params.shares)
   vault.save()
 
   // create stake
@@ -384,6 +366,7 @@ export function handleStaked(event: Staked): void {
 
   stake.owner = event.params.user
   stake.amount = event.params.amount
+  stake.shares = event.params.shares
   stake.timestamp = event.block.timestamp
 
   stake.save()
@@ -393,8 +376,9 @@ export function handleStaked(event: Staked): void {
 export function handleRedeemed(event: Redeemed): void {
 
   let vault = Vault.load((1).toString())
-  vault.balance = vault.balance.minus(event.params.amount)
   vault.staked = vault.staked.minus(event.params.amount)
+  vault.shares = vault.shares.minus(event.params.shares)
+  vault.balance = vault.balance.minus(event.params.shareBalance)
   vault.save()
 
   let stake = Stake.load(event.params.stakeId.toString())
@@ -403,6 +387,7 @@ export function handleRedeemed(event: Redeemed): void {
     store.remove('Stake', event.params.stakeId.toString())
   } else {
     stake.amount = stake.amount.minus(event.params.amount)
+    stake.shares = stake.shares.minus(event.params.shares)
     stake.save()
   }
 

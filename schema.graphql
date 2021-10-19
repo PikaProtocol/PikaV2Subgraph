@@ -39,7 +39,6 @@ type Product @entity {
   openInterestShort: BigInt!
 
   interest: BigInt!
-  settlementTime: BigInt!
   minTradeDuration: BigInt!
 
   liquidationThreshold: BigInt!
@@ -78,7 +77,6 @@ type Position @entity { # open position
   liquidationPrice: BigInt
 
   isLong: Boolean!
-  isSettling: Boolean!
 
   createdAtTimestamp: BigInt!
   createdAtBlockNumber: BigInt!

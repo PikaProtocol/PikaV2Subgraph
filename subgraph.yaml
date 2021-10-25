@@ -3,7 +3,7 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: PikaPerpV2
+    name: PikaPerpV2OptimismKovan
     network: rinkeby
     source:
       address: "0x36a0218EB8aaCb0f89Ca65BcC911a502D41e4aD7"

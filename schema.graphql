@@ -39,10 +39,10 @@ type Product @entity {
   openInterestShort: BigInt!
 
   interest: BigInt!
-  minTradeDuration: BigInt!
 
   liquidationThreshold: BigInt!
   liquidationBounty: BigInt!
+  minPriceChange: BigInt!
   reserve: BigInt!
 
   cumulativePnl: BigInt
@@ -115,6 +115,9 @@ type Trade @entity { # closed position
   pnlIsNegative: Boolean!
   wasLiquidated: Boolean!
   isFullClose: Boolean!
+
+  tradeFee: BigInt!
+  interestFee: BigInt!
 
   timestamp: BigInt!
   blockNumber: BigInt!

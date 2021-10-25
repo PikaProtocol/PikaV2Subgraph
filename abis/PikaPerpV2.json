@@ -283,17 +283,17 @@
           },
           {
             "internalType":"uint16",
-            "name":"minTradeDuration",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
             "name":"liquidationThreshold",
             "type":"uint16"
           },
           {
             "internalType":"uint16",
             "name":"liquidationBounty",
+            "type":"uint16"
+          },
+          {
+            "internalType":"uint16",
+            "name":"minPriceChange",
             "type":"uint16"
           },
           {
@@ -364,17 +364,17 @@
           },
           {
             "internalType":"uint16",
-            "name":"minTradeDuration",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
             "name":"liquidationThreshold",
             "type":"uint16"
           },
           {
             "internalType":"uint16",
             "name":"liquidationBounty",
+            "type":"uint16"
+          },
+          {
+            "internalType":"uint16",
+            "name":"minPriceChange",
             "type":"uint16"
           },
           {
@@ -556,21 +556,6 @@
     "inputs":[
 
     ],
-    "name":"BASE",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
     "name":"MIN_MARGIN",
     "outputs":[
       {
@@ -653,17 +638,17 @@
           },
           {
             "internalType":"uint16",
-            "name":"minTradeDuration",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
             "name":"liquidationThreshold",
             "type":"uint16"
           },
           {
             "internalType":"uint16",
             "name":"liquidationBounty",
+            "type":"uint16"
+          },
+          {
+            "internalType":"uint16",
+            "name":"minPriceChange",
             "type":"uint16"
           },
           {
@@ -688,6 +673,31 @@
     "inputs":[
       {
         "internalType":"uint256",
+        "name":"productId",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"margin",
+        "type":"uint256"
+      },
+      {
+        "internalType":"bool",
+        "name":"isLong",
+        "type":"bool"
+      }
+    ],
+    "name":"closePosition",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"uint256",
         "name":"positionId",
         "type":"uint256"
       },
@@ -697,11 +707,82 @@
         "type":"uint256"
       }
     ],
-    "name":"closePosition",
+    "name":"closePositionWithId",
     "outputs":[
 
     ],
     "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
+        "name":"account",
+        "type":"address"
+      },
+      {
+        "internalType":"uint256",
+        "name":"productId",
+        "type":"uint256"
+      },
+      {
+        "internalType":"bool",
+        "name":"isLong",
+        "type":"bool"
+      }
+    ],
+    "name":"getPosition",
+    "outputs":[
+      {
+        "components":[
+          {
+            "internalType":"uint64",
+            "name":"productId",
+            "type":"uint64"
+          },
+          {
+            "internalType":"uint64",
+            "name":"leverage",
+            "type":"uint64"
+          },
+          {
+            "internalType":"uint64",
+            "name":"price",
+            "type":"uint64"
+          },
+          {
+            "internalType":"uint64",
+            "name":"oraclePrice",
+            "type":"uint64"
+          },
+          {
+            "internalType":"uint64",
+            "name":"margin",
+            "type":"uint64"
+          },
+          {
+            "internalType":"address",
+            "name":"owner",
+            "type":"address"
+          },
+          {
+            "internalType":"uint80",
+            "name":"timestamp",
+            "type":"uint80"
+          },
+          {
+            "internalType":"bool",
+            "name":"isLong",
+            "type":"bool"
+          }
+        ],
+        "internalType":"struct PikaPerpV2.Position",
+        "name":"position",
+        "type":"tuple"
+      }
+    ],
+    "stateMutability":"view",
     "type":"function"
   },
   {
@@ -848,17 +929,17 @@
           },
           {
             "internalType":"uint16",
-            "name":"minTradeDuration",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
             "name":"liquidationThreshold",
             "type":"uint16"
           },
           {
             "internalType":"uint16",
             "name":"liquidationBounty",
+            "type":"uint16"
+          },
+          {
+            "internalType":"uint16",
+            "name":"minPriceChange",
             "type":"uint16"
           },
           {
@@ -1021,12 +1102,12 @@
     "inputs":[
 
     ],
-    "name":"maxShift",
+    "name":"liquidator",
     "outputs":[
       {
-        "internalType":"uint256",
+        "internalType":"address",
         "name":"",
-        "type":"uint256"
+        "type":"address"
       }
     ],
     "stateMutability":"view",
@@ -1036,7 +1117,7 @@
     "inputs":[
 
     ],
-    "name":"nextPositionId",
+    "name":"maxShift",
     "outputs":[
       {
         "internalType":"uint256",
@@ -1087,7 +1168,11 @@
     ],
     "name":"openPosition",
     "outputs":[
-
+      {
+        "internalType":"uint256",
+        "name":"positionId",
+        "type":"uint256"
+      }
     ],
     "stateMutability":"nonpayable",
     "type":"function"
@@ -1221,6 +1306,36 @@
     "inputs":[
       {
         "internalType":"address",
+        "name":"_liquidator",
+        "type":"address"
+      }
+    ],
+    "name":"setLiquidator",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"uint256",
+        "name":"_maxPositionMargin",
+        "type":"uint256"
+      }
+    ],
+    "name":"setMaxPositionMargin",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
         "name":"_owner",
         "type":"address"
       }
@@ -1328,17 +1443,17 @@
           },
           {
             "internalType":"uint16",
-            "name":"minTradeDuration",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
             "name":"liquidationThreshold",
             "type":"uint16"
           },
           {
             "internalType":"uint16",
             "name":"liquidationBounty",
+            "type":"uint16"
+          },
+          {
+            "internalType":"uint16",
+            "name":"minPriceChange",
             "type":"uint16"
           },
           {

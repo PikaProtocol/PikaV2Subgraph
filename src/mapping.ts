@@ -19,7 +19,10 @@ export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 
 export const ZERO_BI = BigInt.fromI32(0)
 export const ONE_BI = BigInt.fromI32(1)
+export const TWO_BI = BigInt.fromI32(2)
 export const UNIT_BI = BigInt.fromI32(100000000)
+export const FEE_BI = BigInt.fromI32(10000)
+export const YEAR_BI = BigInt.fromI32(31104000)
 
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
@@ -168,6 +171,9 @@ export function handleClosePosition(event: ClosePosition): void {
 
     trade.amount = amount
 
+    let tradeFee = amount.times(product.fee).div(FEE_BI)
+    let interestFee = amount.times(product.interest.div(FEE_BI)).times(event.block.timestamp.minus(position.createdAtTimestamp)).div(YEAR_BI)
+
     trade.entryPrice = event.params.entryPrice
     trade.closePrice = event.params.price
 
@@ -176,8 +182,16 @@ export function handleClosePosition(event: ClosePosition): void {
 
     trade.pnl = event.params.pnl
     trade.pnlIsNegative = event.params.pnlIsNegative
+
     trade.wasLiquidated = event.params.wasLiquidated
     trade.isFullClose = event.params.isFullClose
+
+    if (trade.wasLiquidated) {
+      trade.tradeFee = tradeFee.times(ONE_BI)
+    } else {
+      trade.tradeFee = tradeFee.times(TWO_BI)
+    }
+    trade.interestFee = interestFee
 
     trade.isLong = position.isLong
 
@@ -274,11 +288,9 @@ export function handleProductAdded(event: ProductAdded): void {
     product.openInterestShort = ZERO_BI
 
     product.interest = BigInt.fromI32(event.params.product.interest)
-    product.minTradeDuration = BigInt.fromI32(event.params.product.minTradeDuration)
     product.liquidationThreshold = BigInt.fromI32(event.params.product.liquidationThreshold)
     product.liquidationBounty = BigInt.fromI32(event.params.product.liquidationBounty)
-    log.info("event.params.product.{}", [event.params.product.toString()])
-    log.info("event.params.product.{}", [event.params.product.reserve.toString()])
+    product.minPriceChange = BigInt.fromI32(event.params.product.minPriceChange)
     product.reserve = event.params.product.reserve
 
     product.save()
@@ -304,9 +316,9 @@ export function handleProductUpdated(event: ProductUpdated): void {
     product.maxExposure = event.params.product.maxExposure
 
     product.interest = BigInt.fromI32(event.params.product.interest)
-    product.minTradeDuration = BigInt.fromI32(event.params.product.minTradeDuration)
     product.liquidationThreshold = BigInt.fromI32(event.params.product.liquidationThreshold)
     product.liquidationBounty = BigInt.fromI32(event.params.product.liquidationBounty)
+    product.minPriceChange = BigInt.fromI32(event.params.product.minPriceChange)
     product.reserve = event.params.product.reserve
 
     product.save()

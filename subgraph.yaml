@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: PikaPerpV2
-    network: kovan
+    network: rinkeby
     source:
-      address: "0xa5DDF1c2Db45e5af120450bdaae553BD5F8472A6"
+      address: "0x36a0218EB8aaCb0f89Ca65BcC911a502D41e4aD7"
       abi: PikaPerpV2
-      startBlock: 27772500
+      startBlock: 9525113
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

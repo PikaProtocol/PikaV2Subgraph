@@ -172,7 +172,7 @@ export function handleClosePosition(event: ClosePosition): void {
     trade.amount = amount
 
     let tradeFee = amount.times(product.fee).div(FEE_BI)
-    let interestFee = amount.times(product.interest.div(FEE_BI)).times(event.block.timestamp.minus(position.createdAtTimestamp)).div(YEAR_BI)
+    let interestFee = amount.times(product.interest).div(FEE_BI).times(event.block.timestamp.minus(position.createdAtTimestamp)).div(YEAR_BI)
 
     trade.entryPrice = event.params.entryPrice
     trade.closePrice = event.params.price

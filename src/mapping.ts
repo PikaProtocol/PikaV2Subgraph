@@ -13,7 +13,7 @@ import {
   Staked,
   VaultUpdated
 } from "../generated/PikaPerpV2/PikaPerpV2"
-import { Vault, Product, Position, Trade, VaultDayData, Stake } from "../generated/schema"
+import { Vault, Product, Position, Transaction, Trade, VaultDayData, Stake } from "../generated/schema"
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 
@@ -45,6 +45,25 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
 }
 
 export function handleNewPosition(event: NewPosition): void {
+  let product = Product.load((event.params.productId).toString())
+
+  // create transaction
+  let transaction = new Transaction(event.params.positionId.toString() + "0")
+  transaction.txHash = event.transaction.hash.toHexString()
+  transaction.positionId = event.params.positionId
+  transaction.owner = event.params.user
+  transaction.productId = event.params.productId
+  transaction.margin = event.params.margin
+  transaction.leverage = event.params.leverage
+  let amount = event.params.margin.times(event.params.leverage).div(UNIT_BI)
+  transaction.amount = amount
+  transaction.price = event.params.price
+  transaction.isLong = event.params.isLong
+  let tradeFee = amount.times(product.fee).div(FEE_BI)
+  transaction.tradeFee = tradeFee
+  transaction.timestamp = event.block.timestamp
+  transaction.blockNumber = event.block.number
+
   // Create position
   let position = Position.load(event.params.positionId.toString())
   if (!position) {
@@ -55,8 +74,6 @@ export function handleNewPosition(event: NewPosition): void {
   position.price = event.params.price
   position.oraclePrice = event.params.oraclePrice
   position.margin = event.params.margin
-
-  let amount = event.params.margin.times(event.params.leverage).div(UNIT_BI)
   position.amount = amount
 
   position.owner = event.params.user
@@ -67,7 +84,6 @@ export function handleNewPosition(event: NewPosition): void {
   position.createdAtBlockNumber = event.block.number
 
   // Update liquidation price
-  let product = Product.load((event.params.productId).toString())
   let liquidationPrice = ZERO_BI
   if (position.isLong) {
     liquidationPrice = position.price.minus((position.price.times(product.liquidationThreshold).times(BigInt.fromI32(10000))).div(position.leverage))
@@ -81,6 +97,7 @@ export function handleNewPosition(event: NewPosition): void {
   vault.cumulativeVolume = vault.cumulativeVolume.plus(amount)
   vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
   vault.positionCount = vault.positionCount.plus(ONE_BI)
+  vault.txCount = vault.txCount.plus(ONE_BI)
 
   let vaultDayData = getVaultDayData(event)
   vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(amount)
@@ -97,6 +114,7 @@ export function handleNewPosition(event: NewPosition): void {
     product.openInterestShort = product.openInterestShort.plus(amount)
   }
 
+  transaction.save()
   position.save()
   vault.save()
   vaultDayData.save()
@@ -148,6 +166,7 @@ export function handleAddMargin(event: AddMargin): void {
 }
 
 export function handleClosePosition(event: ClosePosition): void {
+  let product = Product.load((event.params.productId).toString())
 
   let position = Position.load(event.params.positionId.toString())
 
@@ -158,8 +177,24 @@ export function handleClosePosition(event: ClosePosition): void {
     let product = Product.load((event.params.productId).toString())
 
     vault.tradeCount = vault.tradeCount.plus(ONE_BI)
+    vault.txCount = vault.txCount.plus(ONE_BI)
 
+    // create transaction
+    let transaction = new Transaction(event.params.positionId.toString() + "1")
+    transaction.txHash = event.transaction.hash.toHexString()
+    transaction.positionId = event.params.positionId
+    transaction.owner = event.params.user
+    transaction.productId = event.params.productId
+    transaction.margin = event.params.margin
+    transaction.leverage = event.params.leverage
     let amount = event.params.margin.times(event.params.leverage).div(UNIT_BI)
+    transaction.amount = amount
+    transaction.price = event.params.price
+    transaction.isLong = !position.isLong
+    let tradeFee = amount.times(product.fee).div(FEE_BI)
+    transaction.tradeFee = tradeFee
+    transaction.timestamp = event.block.timestamp
+    transaction.blockNumber = event.block.number
 
     // create new trade
     let trade = new Trade(vault.tradeCount.toString())
@@ -168,10 +203,8 @@ export function handleClosePosition(event: ClosePosition): void {
     trade.positionId = event.params.positionId
     trade.productId = event.params.productId
     trade.leverage = event.params.leverage
-
     trade.amount = amount
 
-    let tradeFee = amount.times(product.fee).div(FEE_BI)
     let interestFee = amount.times(product.interest).div(FEE_BI).times(event.block.timestamp.minus(position.createdAtTimestamp)).div(YEAR_BI)
 
     trade.entryPrice = event.params.entryPrice
@@ -250,6 +283,7 @@ export function handleClosePosition(event: ClosePosition): void {
       }
     }
 
+    transaction.save()
     trade.save()
     vault.save()
     vaultDayData.save()

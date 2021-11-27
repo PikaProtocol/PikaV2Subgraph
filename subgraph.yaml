@@ -3,10 +3,10 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: PikaPerpV2OptimismKovan
-    network: optimism-kovan
+    name: PikaPerpV2Optimism
+    network: optimism
     source:
-      address: "0x0CB5E355753Ed6FB53494d11590926f5CB4915F9"
+      address: "0x365324E5045df8c886EBe6AD5449F5CeB5881A40"
       abi: PikaPerpV2
       startBlock: 0
     mapping:

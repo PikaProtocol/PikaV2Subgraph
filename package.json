@@ -4,7 +4,7 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --product hosted-service ethandev0/PikaPerpV2OptimismKovan",
+    "deploy": "graph deploy --product hosted-service ethandev0/PikaPerpV2Optimism",
     "create-local": "graph create --node http://localhost:8020/ ethandev0/PikaPerpV2",
     "remove-local": "graph remove --node http://localhost:8020/ PikaPerpV2",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ethandev0/PikaPerpV2"

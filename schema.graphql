@@ -22,6 +22,7 @@ type Vault @entity {
 
   positionCount: BigInt
   tradeCount: BigInt
+  txCount: BigInt
 
 }
 
@@ -81,11 +82,35 @@ type Position @entity { # open position
   createdAtTimestamp: BigInt!
   createdAtBlockNumber: BigInt!
 
-  settledAtTimestamp: BigInt
-  settledAtBlockNumber: BigInt
-
   updatedAtTimestamp: BigInt
   updatedAtBlockNumber: BigInt
+
+}
+
+type Transaction @entity { # open or close
+
+  id: ID! # transactionId
+
+  txHash: String! # event.transaction.hash.toHexString()
+
+  positionId: BigInt!
+
+  owner: Bytes!
+
+  productId: BigInt!
+  margin: BigInt!
+  leverage: BigInt!
+
+  amount: BigInt
+
+  price: BigInt!
+
+  isLong: Boolean!
+
+  tradeFee: BigInt!
+
+  timestamp: BigInt!
+  blockNumber: BigInt!
 
 }
 

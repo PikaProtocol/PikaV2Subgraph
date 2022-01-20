@@ -13,16 +13,22 @@ type Vault @entity {
   staked: BigInt
   shares: BigInt
   stakingPeriod: BigInt!
-  redemptionPeriod: BigInt!
-  maxDailyDrawdown: BigInt!
 
   cumulativePnl: BigInt
   cumulativeVolume: BigInt
   cumulativeMargin: BigInt
+  cumulativeFee: BigInt
 
   positionCount: BigInt
   tradeCount: BigInt
   txCount: BigInt
+  liquidationCount: BigInt
+  userCount: BigInt
+
+  protocolReward: BigInt
+  pikaReward: BigInt
+  vaultReward: BigInt
+
 
 }
 
@@ -35,7 +41,6 @@ type Product @entity {
 
   isActive: Boolean!
 
-  maxExposure: BigInt!
   openInterestLong: BigInt!
   openInterestShort: BigInt!
 
@@ -44,6 +49,7 @@ type Product @entity {
   liquidationThreshold: BigInt!
   liquidationBounty: BigInt!
   minPriceChange: BigInt!
+  weight: BigInt!
   reserve: BigInt!
 
   cumulativePnl: BigInt
@@ -114,6 +120,10 @@ type Transaction @entity { # open or close
 
 }
 
+type User @entity {
+  id: ID! # user address
+}
+
 type Trade @entity { # closed position
 
   id: ID! # unique: vault.tradeCount.toString()
@@ -149,6 +159,24 @@ type Trade @entity { # closed position
 
 }
 
+type Liquidation @entity {
+
+  id: ID! # liquidation count
+
+  txHash: String! # event.transaction.hash.toHexString()
+
+  positionId: BigInt!
+
+  liquidator: Bytes!
+
+  liquidatorReward: BigInt!
+  remainingReward: BigInt!
+
+  timestamp: BigInt!
+  blockNumber: BigInt!
+
+}
+
 type VaultDayData @entity {
 
   id: ID! # day id = event.block.timestamp / 86400 see https://github.com/Uniswap/uniswap-v3-subgraph/blob/1593a62059589bb1266d19bf18c5fa08fb68fe63/src/utils/intervalUpdates.ts#L43
@@ -158,27 +186,19 @@ type VaultDayData @entity {
   cumulativePnl: BigInt
   cumulativeVolume: BigInt
   cumulativeMargin: BigInt
+  cumulativeFee: BigInt
 
   positionCount: BigInt
   tradeCount: BigInt
-
 }
 
 type Stake @entity {
 
   id: ID! #stakeId
 
-  owner: Bytes
   amount: BigInt
   shares: BigInt
   timestamp: BigInt
 
 }
 
-#type User @entity {
-#  id: ID! # trader address, to fetch / mappings see https://github.com/perpetual-protocol/perp-position-subgraph/blob/master/src/mappings/helper.ts#L133
-#}
-
-#type UserDayData @entity {
-# id: ID! # id is trader id + day id. See https://github.com/perpetual-protocol/perp-position-subgraph/blob/master/src/mappings/helper.ts#L141. then you just fetch it and update it: https://github.com/perpetual-protocol/perp-position-subgraph/blob/master/src/mappings/clearingHouse.ts#L119
-#}

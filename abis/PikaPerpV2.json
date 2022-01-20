@@ -3,13 +3,23 @@
     "inputs":[
       {
         "internalType":"address",
-        "name":"_usdc",
+        "name":"_token",
         "type":"address"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_tokenDecimal",
+        "type":"uint256"
       },
       {
         "internalType":"address",
         "name":"_oracle",
         "type":"address"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_minMargin",
+        "type":"uint256"
       }
     ],
     "stateMutability":"nonpayable",
@@ -56,7 +66,7 @@
     "anonymous":false,
     "inputs":[
       {
-        "indexed":false,
+        "indexed":true,
         "internalType":"uint256",
         "name":"positionId",
         "type":"uint256"
@@ -72,12 +82,6 @@
         "internalType":"uint256",
         "name":"productId",
         "type":"uint256"
-      },
-      {
-        "indexed":true,
-        "internalType":"bool",
-        "name":"isFullClose",
-        "type":"bool"
       },
       {
         "indexed":false,
@@ -106,14 +110,14 @@
       {
         "indexed":false,
         "internalType":"uint256",
-        "name":"pnl",
+        "name":"fee",
         "type":"uint256"
       },
       {
         "indexed":false,
-        "internalType":"bool",
-        "name":"pnlIsNegative",
-        "type":"bool"
+        "internalType":"int256",
+        "name":"pnl",
+        "type":"int256"
       },
       {
         "indexed":false,
@@ -175,9 +179,28 @@
         "internalType":"uint256",
         "name":"leverage",
         "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"fee",
+        "type":"uint256"
       }
     ],
     "name":"NewPosition",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"newOracle",
+        "type":"address"
+      }
+    ],
+    "name":"OracleUpdated",
     "type":"event"
   },
   {
@@ -191,6 +214,38 @@
       }
     ],
     "name":"OwnerUpdated",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"to",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"amount",
+        "type":"uint256"
+      }
+    ],
+    "name":"PikaRewardDistributed",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"pikaRewardRatio",
+        "type":"uint256"
+      }
+    ],
+    "name":"PikaRewardRatioUpdated",
     "type":"event"
   },
   {
@@ -217,13 +272,7 @@
       {
         "indexed":false,
         "internalType":"uint256",
-        "name":"protocolReward",
-        "type":"uint256"
-      },
-      {
-        "indexed":false,
-        "internalType":"uint256",
-        "name":"vaultReward",
+        "name":"remainingReward",
         "type":"uint256"
       }
     ],
@@ -263,11 +312,6 @@
           },
           {
             "internalType":"uint64",
-            "name":"maxExposure",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
             "name":"openInterestLong",
             "type":"uint64"
           },
@@ -294,6 +338,11 @@
           {
             "internalType":"uint16",
             "name":"minPriceChange",
+            "type":"uint16"
+          },
+          {
+            "internalType":"uint16",
+            "name":"weight",
             "type":"uint16"
           },
           {
@@ -344,11 +393,6 @@
           },
           {
             "internalType":"uint64",
-            "name":"maxExposure",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
             "name":"openInterestLong",
             "type":"uint64"
           },
@@ -378,6 +422,11 @@
             "type":"uint16"
           },
           {
+            "internalType":"uint16",
+            "name":"weight",
+            "type":"uint16"
+          },
+          {
             "internalType":"uint64",
             "name":"reserve",
             "type":"uint64"
@@ -397,36 +446,36 @@
     "inputs":[
       {
         "indexed":false,
+        "internalType":"address",
+        "name":"to",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"amount",
+        "type":"uint256"
+      }
+    ],
+    "name":"ProtocolRewardDistributed",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
         "internalType":"uint256",
         "name":"protocolRewardRatio",
         "type":"uint256"
       }
     ],
-    "name":"ProtocolFeeUpdated",
+    "name":"ProtocolRewardRatioUpdated",
     "type":"event"
   },
   {
     "anonymous":false,
     "inputs":[
-      {
-        "indexed":false,
-        "internalType":"address",
-        "name":"protocol",
-        "type":"address"
-      }
-    ],
-    "name":"ProtocolUpdated",
-    "type":"event"
-  },
-  {
-    "anonymous":false,
-    "inputs":[
-      {
-        "indexed":false,
-        "internalType":"uint256",
-        "name":"stakeId",
-        "type":"uint256"
-      },
       {
         "indexed":true,
         "internalType":"address",
@@ -465,12 +514,6 @@
     "anonymous":false,
     "inputs":[
       {
-        "indexed":false,
-        "internalType":"uint256",
-        "name":"stakeId",
-        "type":"uint256"
-      },
-      {
         "indexed":true,
         "internalType":"address",
         "name":"user",
@@ -490,6 +533,25 @@
       }
     ],
     "name":"Staked",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"to",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"amount",
+        "type":"uint256"
+      }
+    ],
+    "name":"VaultRewardDistributed",
     "type":"event"
   },
   {
@@ -518,28 +580,8 @@
             "type":"uint64"
           },
           {
-            "internalType":"uint80",
-            "name":"lastCheckpointBalance",
-            "type":"uint80"
-          },
-          {
-            "internalType":"uint80",
-            "name":"lastCheckpointTime",
-            "type":"uint80"
-          },
-          {
             "internalType":"uint32",
             "name":"stakingPeriod",
-            "type":"uint32"
-          },
-          {
-            "internalType":"uint32",
-            "name":"redemptionPeriod",
-            "type":"uint32"
-          },
-          {
-            "internalType":"uint32",
-            "name":"maxDailyDrawdown",
             "type":"uint32"
           }
         ],
@@ -556,7 +598,22 @@
     "inputs":[
 
     ],
-    "name":"MIN_MARGIN",
+    "name":"BASE",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"BASE_DECIMALS",
     "outputs":[
       {
         "internalType":"uint256",
@@ -584,7 +641,7 @@
     "outputs":[
 
     ],
-    "stateMutability":"nonpayable",
+    "stateMutability":"payable",
     "type":"function"
   },
   {
@@ -618,11 +675,6 @@
           },
           {
             "internalType":"uint64",
-            "name":"maxExposure",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
             "name":"openInterestLong",
             "type":"uint64"
           },
@@ -649,6 +701,11 @@
           {
             "internalType":"uint16",
             "name":"minPriceChange",
+            "type":"uint16"
+          },
+          {
+            "internalType":"uint16",
+            "name":"weight",
             "type":"uint16"
           },
           {
@@ -731,6 +788,111 @@
 
     ],
     "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"distributePikaReward",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"distributeProtocolReward",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"distributeVaultReward",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"exposureMultiplier",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"getPendingPikaReward",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"getPendingProtocolReward",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"getPendingVaultReward",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
     "type":"function"
   },
   {
@@ -928,11 +1090,6 @@
           },
           {
             "internalType":"uint64",
-            "name":"maxExposure",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
             "name":"openInterestLong",
             "type":"uint64"
           },
@@ -962,6 +1119,11 @@
             "type":"uint16"
           },
           {
+            "internalType":"uint16",
+            "name":"weight",
+            "type":"uint16"
+          },
+          {
             "internalType":"uint64",
             "name":"reserve",
             "type":"uint64"
@@ -978,12 +1140,50 @@
   {
     "inputs":[
       {
-        "internalType":"uint256[]",
-        "name":"stakeIds",
-        "type":"uint256[]"
+        "internalType":"address",
+        "name":"stakeOwner",
+        "type":"address"
       }
     ],
-    "name":"getStakes",
+    "name":"getShare",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
+        "name":"stakeOwner",
+        "type":"address"
+      }
+    ],
+    "name":"getShareBalance",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
+        "name":"stakeOwner",
+        "type":"address"
+      }
+    ],
+    "name":"getStake",
     "outputs":[
       {
         "components":[
@@ -1008,9 +1208,24 @@
             "type":"uint32"
           }
         ],
-        "internalType":"struct PikaPerpV2.Stake[]",
-        "name":"_stakes",
-        "type":"tuple[]"
+        "internalType":"struct PikaPerpV2.Stake",
+        "name":"",
+        "type":"tuple"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"getTotalShare",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
       }
     ],
     "stateMutability":"view",
@@ -1045,28 +1260,8 @@
             "type":"uint64"
           },
           {
-            "internalType":"uint80",
-            "name":"lastCheckpointBalance",
-            "type":"uint80"
-          },
-          {
-            "internalType":"uint80",
-            "name":"lastCheckpointTime",
-            "type":"uint80"
-          },
-          {
             "internalType":"uint32",
             "name":"stakingPeriod",
-            "type":"uint32"
-          },
-          {
-            "internalType":"uint32",
-            "name":"redemptionPeriod",
-            "type":"uint32"
-          },
-          {
-            "internalType":"uint32",
-            "name":"maxDailyDrawdown",
             "type":"uint32"
           }
         ],
@@ -1076,30 +1271,6 @@
       }
     ],
     "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"uint256",
-        "name":"positionId",
-        "type":"uint256"
-      }
-    ],
-    "name":"liquidatePosition",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"liquidatorReward",
-        "type":"uint256"
-      },
-      {
-        "internalType":"uint256",
-        "name":"protocolReward",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"nonpayable",
     "type":"function"
   },
   {
@@ -1136,6 +1307,21 @@
     "inputs":[
 
     ],
+    "name":"maxPositionMargin",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
     "name":"maxShift",
     "outputs":[
       {
@@ -1151,7 +1337,22 @@
     "inputs":[
 
     ],
-    "name":"nextStakeId",
+    "name":"minMargin",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"minProfitTime",
     "outputs":[
       {
         "internalType":"uint256",
@@ -1193,7 +1394,7 @@
         "type":"uint256"
       }
     ],
-    "stateMutability":"nonpayable",
+    "stateMutability":"payable",
     "type":"function"
   },
   {
@@ -1230,7 +1431,82 @@
     "inputs":[
 
     ],
-    "name":"protocol",
+    "name":"pendingPikaReward",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"pendingProtocolReward",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"pendingVaultReward",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"pikaRewardDistributor",
+    "outputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"pikaRewardRatio",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"protocolRewardDistributor",
     "outputs":[
       {
         "internalType":"address",
@@ -1258,11 +1534,6 @@
   },
   {
     "inputs":[
-      {
-        "internalType":"uint256",
-        "name":"stakeId",
-        "type":"uint256"
-      },
       {
         "internalType":"uint256",
         "name":"shares",
@@ -1325,6 +1596,51 @@
     "inputs":[
       {
         "internalType":"address",
+        "name":"_protocolRewardDistributor",
+        "type":"address"
+      },
+      {
+        "internalType":"address",
+        "name":"_pikaRewardDistributor",
+        "type":"address"
+      },
+      {
+        "internalType":"address",
+        "name":"_vaultRewardDistributor",
+        "type":"address"
+      },
+      {
+        "internalType":"address",
+        "name":"_vaultTokenReward",
+        "type":"address"
+      }
+    ],
+    "name":"setDistributors",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"uint256",
+        "name":"_exposureMultiplier",
+        "type":"uint256"
+      }
+    ],
+    "name":"setExposureMultiplier",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
         "name":"_liquidator",
         "type":"address"
       }
@@ -1345,6 +1661,21 @@
       }
     ],
     "name":"setMaxPositionMargin",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"uint256",
+        "name":"_minMargin",
+        "type":"uint256"
+      }
+    ],
+    "name":"setMinMargin",
     "outputs":[
 
     ],
@@ -1384,12 +1715,12 @@
   {
     "inputs":[
       {
-        "internalType":"address",
-        "name":"_protocol",
-        "type":"address"
+        "internalType":"uint256",
+        "name":"_pikaRewardRatio",
+        "type":"uint256"
       }
     ],
-    "name":"setProtocolAddress",
+    "name":"setPikaRewardRatio",
     "outputs":[
 
     ],
@@ -1423,7 +1754,102 @@
     "outputs":[
 
     ],
-    "stateMutability":"nonpayable",
+    "stateMutability":"payable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"uint256",
+        "name":"amount",
+        "type":"uint256"
+      },
+      {
+        "internalType":"address",
+        "name":"user",
+        "type":"address"
+      }
+    ],
+    "name":"stakeFor",
+    "outputs":[
+
+    ],
+    "stateMutability":"payable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"token",
+    "outputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"tokenBase",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"tokenDecimal",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"totalOpenInterest",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"totalWeight",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
     "type":"function"
   },
   {
@@ -1457,11 +1883,6 @@
           },
           {
             "internalType":"uint64",
-            "name":"maxExposure",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
             "name":"openInterestLong",
             "type":"uint64"
           },
@@ -1488,6 +1909,11 @@
           {
             "internalType":"uint16",
             "name":"minPriceChange",
+            "type":"uint16"
+          },
+          {
+            "internalType":"uint16",
+            "name":"weight",
             "type":"uint16"
           },
           {
@@ -1533,28 +1959,8 @@
             "type":"uint64"
           },
           {
-            "internalType":"uint80",
-            "name":"lastCheckpointBalance",
-            "type":"uint80"
-          },
-          {
-            "internalType":"uint80",
-            "name":"lastCheckpointTime",
-            "type":"uint80"
-          },
-          {
             "internalType":"uint32",
             "name":"stakingPeriod",
-            "type":"uint32"
-          },
-          {
-            "internalType":"uint32",
-            "name":"redemptionPeriod",
-            "type":"uint32"
-          },
-          {
-            "internalType":"uint32",
-            "name":"maxDailyDrawdown",
             "type":"uint32"
           }
         ],
@@ -1574,7 +1980,37 @@
     "inputs":[
 
     ],
-    "name":"usdc",
+    "name":"utilizationMultiplier",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"vaultRewardDistributor",
+    "outputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"vaultTokenReward",
     "outputs":[
       {
         "internalType":"address",

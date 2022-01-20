@@ -8,12 +8,14 @@ import {
   PositionLiquidated,
   ProductAdded,
   ProductUpdated,
-  ProtocolFeeUpdated,
   Redeemed,
   Staked,
-  VaultUpdated
-} from "../generated/PikaPerpV2/PikaPerpV2"
-import { Vault, Product, Position, Transaction, Trade, VaultDayData, Stake } from "../generated/schema"
+  VaultUpdated,
+  ProtocolRewardDistributed,
+  PikaRewardDistributed,
+  VaultRewardDistributed,
+} from "../generated/PikaPerpV2Rinkeby/PikaPerpV2"
+import { Vault, Product, Position, Transaction, Trade, VaultDayData, Stake, Liquidation, User } from "../generated/schema"
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 
@@ -22,7 +24,7 @@ export const ONE_BI = BigInt.fromI32(1)
 export const TWO_BI = BigInt.fromI32(2)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
-export const YEAR_BI = BigInt.fromI32(31104000)
+export const YEAR_BI = BigInt.fromI32(31536000)
 
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
@@ -45,6 +47,14 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
 }
 
 export function handleNewPosition(event: NewPosition): void {
+  let vault = Vault.load((1).toString())
+
+  let user = User.load((event.params.user).toString())
+  if (user == null) {
+    user = new User((event.params.user).toString())
+    vault.userCount = vault.userCount.plus(ONE_BI)
+  }
+
   let product = Product.load((event.params.productId).toString())
 
   // create transaction
@@ -93,7 +103,6 @@ export function handleNewPosition(event: NewPosition): void {
   position.liquidationPrice = liquidationPrice
 
   // volume updates
-  let vault = Vault.load((1).toString())
   vault.cumulativeVolume = vault.cumulativeVolume.plus(amount)
   vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
   vault.positionCount = vault.positionCount.plus(ONE_BI)
@@ -114,6 +123,7 @@ export function handleNewPosition(event: NewPosition): void {
     product.openInterestShort = product.openInterestShort.plus(amount)
   }
 
+  user.save()
   transaction.save()
   position.save()
   vault.save()
@@ -214,10 +224,10 @@ export function handleClosePosition(event: ClosePosition): void {
     trade.owner = event.params.user
 
     trade.pnl = event.params.pnl
-    trade.pnlIsNegative = event.params.pnlIsNegative
+    trade.pnlIsNegative = !trade.pnl.gt(ZERO_BI)
 
     trade.wasLiquidated = event.params.wasLiquidated
-    trade.isFullClose = event.params.isFullClose
+    trade.isFullClose = event.params.margin == position.margin
 
     if (trade.wasLiquidated) {
       trade.tradeFee = tradeFee.times(ONE_BI)
@@ -233,7 +243,7 @@ export function handleClosePosition(event: ClosePosition): void {
 
     // Update position
 
-    if (event.params.isFullClose) {
+    if (trade.isFullClose) {
       store.remove('Position', event.params.positionId.toString())
       vault.positionCount = vault.positionCount.minus(ONE_BI)
       product.positionCount = product.positionCount.minus(ONE_BI)
@@ -316,7 +326,6 @@ export function handleProductAdded(event: ProductAdded): void {
     product.fee = BigInt.fromI32(event.params.product.fee)
 
     product.isActive = true
-    product.maxExposure = event.params.product.maxExposure
 
     product.openInterestLong = ZERO_BI
     product.openInterestShort = ZERO_BI
@@ -325,6 +334,7 @@ export function handleProductAdded(event: ProductAdded): void {
     product.liquidationThreshold = BigInt.fromI32(event.params.product.liquidationThreshold)
     product.liquidationBounty = BigInt.fromI32(event.params.product.liquidationBounty)
     product.minPriceChange = BigInt.fromI32(event.params.product.minPriceChange)
+    product.weight = BigInt.fromI32(event.params.product.weight)
     product.reserve = event.params.product.reserve
 
     product.save()
@@ -347,7 +357,6 @@ export function handleProductUpdated(event: ProductUpdated): void {
     product.fee = BigInt.fromI32(event.params.product.fee)
 
     product.isActive = event.params.product.isActive
-    product.maxExposure = event.params.product.maxExposure
 
     product.interest = BigInt.fromI32(event.params.product.interest)
     product.liquidationThreshold = BigInt.fromI32(event.params.product.liquidationThreshold)
@@ -391,9 +400,6 @@ export function handleVaultUpdated(event: VaultUpdated): void {
   vault.cap = event.params.vault.cap
 
   vault.stakingPeriod = event.params.vault.stakingPeriod
-  vault.redemptionPeriod = event.params.vault.redemptionPeriod
-
-  vault.maxDailyDrawdown = event.params.vault.maxDailyDrawdown
 
   vault.save()
 
@@ -407,12 +413,18 @@ export function handleStaked(event: Staked): void {
   vault.shares = vault.shares.plus(event.params.shares)
   vault.save()
 
-  // create stake
-  let stake = new Stake(event.params.stakeId.toString())
+  let stake = Stake.load(event.params.user.toString())
 
-  stake.owner = event.params.user
-  stake.amount = event.params.amount
-  stake.shares = event.params.shares
+  if (stake == null) {
+    // create stake
+    stake = new Stake(event.params.user.toString())
+
+    stake.amount = event.params.amount
+    stake.shares = event.params.shares
+  } else {
+    stake.amount = stake.amount.plus(event.params.amount)
+    stake.shares = stake.shares.plus(event.params.shares)
+  }
   stake.timestamp = event.block.timestamp
 
   stake.save()
@@ -427,10 +439,10 @@ export function handleRedeemed(event: Redeemed): void {
   vault.balance = vault.balance.minus(event.params.shareBalance)
   vault.save()
 
-  let stake = Stake.load(event.params.stakeId.toString())
+  let stake = Stake.load(event.params.user.toString())
 
   if (event.params.isFullRedeem) {
-    store.remove('Stake', event.params.stakeId.toString())
+    store.remove('Stake', event.params.user.toString())
   } else {
     stake.amount = stake.amount.minus(event.params.amount)
     stake.shares = stake.shares.minus(event.params.shares)
@@ -439,6 +451,41 @@ export function handleRedeemed(event: Redeemed): void {
 
 }
 
+export function handleProtocolRewardDistributed(event: ProtocolRewardDistributed): void {
+  let vault = Vault.load((1).toString())
+  vault.protocolReward = vault.protocolReward.plus(event.params.amount)
+  vault.save()
+}
+
+export function handlePikaRewardDistributed(event: PikaRewardDistributed): void {
+  let vault = Vault.load((1).toString())
+  vault.pikaReward = vault.pikaReward.plus(event.params.amount)
+  vault.save()
+}
+
+export function handleVaultRewardDistributed(event: VaultRewardDistributed): void {
+  let vault = Vault.load((1).toString())
+  vault.vaultReward = vault.vaultReward.plus(event.params.amount)
+  vault.save()
+}
+
+export function handlePositionLiquidated(event: PositionLiquidated): void {
+  let vault = Vault.load((1).toString())
+  let liquidation = new Liquidation(vault.liquidationCount.toString())
+
+  liquidation.txHash = event.transaction.hash.toHexString()
+  liquidation.positionId = event.params.positionId
+  liquidation.liquidator = event.params.liquidator
+  liquidation.liquidatorReward = event.params.liquidatorReward
+  liquidation.remainingReward = event.params.remainingReward
+
+  liquidation.timestamp = event.block.timestamp
+  liquidation.blockNumber = event.block.number
+  vault.liquidationCount = vault.liquidationCount.plus(ONE_BI)
+
+  vault.save()
+  liquidation.save()
+}
+
 export function handleOwnerUpdated(event: OwnerUpdated): void {}
-export function handleProtocolFeeUpdated(event: ProtocolFeeUpdated): void {}
-export function handlePositionLiquidated(event: PositionLiquidated): void {}
+

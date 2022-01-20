@@ -3,12 +3,12 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: PikaPerpV2Optimism
-    network: optimism
+    name: PikaPerpV2Rinkeby
+    network: rinkeby
     source:
-      address: "0x365324E5045df8c886EBe6AD5449F5CeB5881A40"
+      address: "0x22d11584c4FEc68417468DAaCAcCdd4a1E2809d0"
       abi: PikaPerpV2
-      startBlock: 0
+      startBlock: 9905329
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
@@ -21,34 +21,40 @@ dataSources:
         - PositionLiquidated
         - ProductAdded
         - ProductUpdated
-        - ProtocolFeeUpdated
         - Redeemed
         - Staked
         - VaultUpdated
+        - ProtocolRewardDistributed
+        - PikaRewardDistributed
+        - VaultRewardDistributed
       abis:
         - name: PikaPerpV2
           file: ./abis/PikaPerpV2.json
       eventHandlers:
         - event: AddMargin(indexed uint256,indexed address,uint256,uint256,uint256)
           handler: handleAddMargin
-        - event: ClosePosition(uint256,indexed address,indexed uint256,indexed bool,uint256,uint256,uint256,uint256,uint256,bool,bool)
+        - event: ClosePosition(indexed uint256,indexed address,indexed uint256,uint256,uint256,uint256,uint256,uint256,int256,bool)
           handler: handleClosePosition
-        - event: NewPosition(indexed uint256,indexed address,indexed uint256,bool,uint256,uint256,uint256,uint256)
+        - event: NewPosition(indexed uint256,indexed address,indexed uint256,bool,uint256,uint256,uint256,uint256,uint256)
           handler: handleNewPosition
         - event: OwnerUpdated(address)
           handler: handleOwnerUpdated
-        - event: PositionLiquidated(indexed uint256,indexed address,uint256,uint256,uint256)
+        - event: PositionLiquidated(indexed uint256,indexed address,uint256,uint256)
           handler: handlePositionLiquidated
-        - event: ProductAdded(uint256,(address,uint72,uint16,bool,uint64,uint64,uint64,uint16,uint16,uint16,uint16,uint64))
+        - event: ProductAdded(uint256,(address,uint72,uint16,bool,uint64,uint64,uint16,uint16,uint16,uint16,uint16,uint64))
           handler: handleProductAdded
-        - event: ProductUpdated(uint256,(address,uint72,uint16,bool,uint64,uint64,uint64,uint16,uint16,uint16,uint16,uint64))
+        - event: ProductUpdated(uint256,(address,uint72,uint16,bool,uint64,uint64,uint16,uint16,uint16,uint16,uint16,uint64))
           handler: handleProductUpdated
-        - event: ProtocolFeeUpdated(uint256)
-          handler: handleProtocolFeeUpdated
-        - event: Redeemed(uint256,indexed address,uint256,uint256,uint256,bool)
+        - event: Redeemed(indexed address,uint256,uint256,uint256,bool)
           handler: handleRedeemed
-        - event: Staked(uint256,indexed address,uint256,uint256)
+        - event: Staked(indexed address,uint256,uint256)
           handler: handleStaked
-        - event: VaultUpdated((uint96,uint96,uint64,uint64,uint80,uint80,uint32,uint32,uint32))
+        - event: VaultUpdated((uint96,uint96,uint64,uint64,uint32))
           handler: handleVaultUpdated
+        - event: ProtocolRewardDistributed(address,uint256)
+          handler: handleProtocolRewardDistributed
+        - event: PikaRewardDistributed(address,uint256)
+          handler: handlePikaRewardDistributed
+        - event: VaultRewardDistributed(address,uint256)
+          handler: handleVaultRewardDistributed
       file: ./src/mapping.ts

@@ -239,19 +239,6 @@
     "anonymous":false,
     "inputs":[
       {
-        "indexed":false,
-        "internalType":"uint256",
-        "name":"pikaRewardRatio",
-        "type":"uint256"
-      }
-    ],
-    "name":"PikaRewardRatioUpdated",
-    "type":"event"
-  },
-  {
-    "anonymous":false,
-    "inputs":[
-      {
         "indexed":true,
         "internalType":"uint256",
         "name":"positionId",
@@ -464,19 +451,6 @@
     "anonymous":false,
     "inputs":[
       {
-        "indexed":false,
-        "internalType":"uint256",
-        "name":"protocolRewardRatio",
-        "type":"uint256"
-      }
-    ],
-    "name":"ProtocolRewardRatioUpdated",
-    "type":"event"
-  },
-  {
-    "anonymous":false,
-    "inputs":[
-      {
         "indexed":true,
         "internalType":"address",
         "name":"user",
@@ -508,6 +482,25 @@
       }
     ],
     "name":"Redeemed",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"protocolRewardRatio",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"pikaRewardRatio",
+        "type":"uint256"
+      }
+    ],
+    "name":"RewardRatioUpdated",
     "type":"event"
   },
   {
@@ -1390,6 +1383,45 @@
     "outputs":[
       {
         "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"payable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
+        "name":"user",
+        "type":"address"
+      },
+      {
+        "internalType":"uint256",
+        "name":"productId",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"margin",
+        "type":"uint256"
+      },
+      {
+        "internalType":"bool",
+        "name":"isLong",
+        "type":"bool"
+      },
+      {
+        "internalType":"uint256",
+        "name":"leverage",
+        "type":"uint256"
+      }
+    ],
+    "name":"openPositionForUser",
+    "outputs":[
+      {
+        "internalType":"uint256",
         "name":"positionId",
         "type":"uint256"
       }
@@ -1566,26 +1598,16 @@
     "inputs":[
       {
         "internalType":"bool",
+        "name":"_canUserStake",
+        "type":"bool"
+      },
+      {
+        "internalType":"bool",
         "name":"_allowPublicLiquidator",
         "type":"bool"
       }
     ],
-    "name":"setAllowPublicLiquidator",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"bool",
-        "name":"_canUserStake",
-        "type":"bool"
-      }
-    ],
-    "name":"setCanUserStake",
+    "name":"setCanUserStakeAndAllowPublicLiquidator",
     "outputs":[
 
     ],
@@ -1656,11 +1678,16 @@
     "inputs":[
       {
         "internalType":"uint256",
+        "name":"_minMargin",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
         "name":"_maxPositionMargin",
         "type":"uint256"
       }
     ],
-    "name":"setMaxPositionMargin",
+    "name":"setMargin",
     "outputs":[
 
     ],
@@ -1671,11 +1698,16 @@
     "inputs":[
       {
         "internalType":"uint256",
-        "name":"_minMargin",
+        "name":"_maxShift",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_minProfitTime",
         "type":"uint256"
       }
     ],
-    "name":"setMinMargin",
+    "name":"setMaxShiftAndMinProfitTime",
     "outputs":[
 
     ],
@@ -1716,26 +1748,16 @@
     "inputs":[
       {
         "internalType":"uint256",
+        "name":"_protocolRewardRatio",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
         "name":"_pikaRewardRatio",
         "type":"uint256"
       }
     ],
-    "name":"setPikaRewardRatio",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"uint256",
-        "name":"_protocolRewardRatio",
-        "type":"uint256"
-      }
-    ],
-    "name":"setProtocolRewardRatio",
+    "name":"setRewardRatio",
     "outputs":[
 
     ],
@@ -1770,7 +1792,7 @@
         "type":"address"
       }
     ],
-    "name":"stakeFor",
+    "name":"stakeForUser",
     "outputs":[
 
     ],

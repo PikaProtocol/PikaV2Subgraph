@@ -21,6 +21,7 @@ export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 
 export const ZERO_BI = BigInt.fromI32(0)
 export const ONE_BI = BigInt.fromI32(1)
+export const NEG_ONE_BI = BigInt.fromI32(-1)
 export const TWO_BI = BigInt.fromI32(2)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
@@ -58,7 +59,7 @@ export function handleNewPosition(event: NewPosition): void {
   let product = Product.load((event.params.productId).toString())
 
   // create transaction
-  let transaction = new Transaction(event.params.positionId.toString() + "0")
+  let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "0")
   transaction.txHash = event.transaction.hash.toHexString()
   transaction.positionId = event.params.positionId
   transaction.owner = event.params.user
@@ -190,7 +191,7 @@ export function handleClosePosition(event: ClosePosition): void {
     vault.txCount = vault.txCount.plus(ONE_BI)
 
     // create transaction
-    let transaction = new Transaction(event.params.positionId.toString() + "1")
+    let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "1")
     transaction.txHash = event.transaction.hash.toHexString()
     transaction.positionId = event.params.positionId
     transaction.owner = event.params.user
@@ -223,7 +224,7 @@ export function handleClosePosition(event: ClosePosition): void {
     trade.margin = event.params.margin
     trade.owner = event.params.user
 
-    trade.pnl = event.params.pnl
+    trade.pnl = event.params.wasLiquidated && event.params.pnl.gt(ZERO_BI) ? NEG_ONE_BI.times(event.params.pnl) : event.params.pnl
     trade.pnlIsNegative = !trade.pnl.gt(ZERO_BI)
 
     trade.wasLiquidated = event.params.wasLiquidated
@@ -259,17 +260,11 @@ export function handleClosePosition(event: ClosePosition): void {
     vault.cumulativeVolume = vault.cumulativeVolume.plus(amount)
     vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
 
-    if (trade.pnlIsNegative) {
-      vault.cumulativePnl = vault.cumulativePnl.minus(event.params.pnl)
-      vault.balance = vault.balance.plus(event.params.pnl)
-      vaultDayData.cumulativePnl = vaultDayData.cumulativePnl.minus(event.params.pnl)
-      product.cumulativePnl = product.cumulativePnl.minus(event.params.pnl)
-    } else {
-      vault.cumulativePnl = vault.cumulativePnl.plus(event.params.pnl)
-      vault.balance = vault.balance.minus(event.params.pnl)
-      vaultDayData.cumulativePnl = vaultDayData.cumulativePnl.plus(event.params.pnl)
-      product.cumulativePnl = product.cumulativePnl.plus(event.params.pnl)
-    }
+    vault.cumulativePnl = vault.cumulativePnl.plus(trade.pnl)
+    vault.balance = vault.balance.minus(trade.pnl)
+    vaultDayData.cumulativePnl = vaultDayData.cumulativePnl.plus(trade.pnl)
+    product.cumulativePnl = product.cumulativePnl.plus(trade.pnl)
+
 
     vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(amount)
     vaultDayData.cumulativeMargin = vaultDayData.cumulativeMargin.plus(event.params.margin)

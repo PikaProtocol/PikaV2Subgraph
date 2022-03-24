@@ -58,7 +58,7 @@ export function handleNewPosition(event: NewPosition): void {
   let product = Product.load((event.params.productId).toString())
 
   // create transaction
-  let transaction = new Transaction(event.params.positionId.toString() + "0")
+  let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "0")
   transaction.txHash = event.transaction.hash.toHexString()
   transaction.positionId = event.params.positionId
   transaction.owner = event.params.user
@@ -190,7 +190,7 @@ export function handleClosePosition(event: ClosePosition): void {
     vault.txCount = vault.txCount.plus(ONE_BI)
 
     // create transaction
-    let transaction = new Transaction(event.params.positionId.toString() + "1")
+    let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "1")
     transaction.txHash = event.transaction.hash.toHexString()
     transaction.positionId = event.params.positionId
     transaction.owner = event.params.user

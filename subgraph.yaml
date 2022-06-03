@@ -58,3 +58,27 @@ dataSources:
         - event: VaultRewardDistributed(address,uint256)
           handler: handleVaultRewardDistributed
       file: ./src/mapping.ts
+
+  - kind: ethereum/contract
+    name: VaultFeeReward
+    network: optimism
+    source:
+      address: "0x58488bb666d2da33f8e8938dbdd582d2481d4183"
+      abi: VaultFeeReward
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - ClaimedReward
+        - Reinvested
+      abis:
+        - name: VaultFeeReward
+          file: ./abis/VaultFeeReward.json
+      eventHandlers:
+        - event: ClaimedReward(address,address,uint256)
+          handler: handleClaimedReward
+        - event: Reinvested(address,address,uint256)
+          handler: handleReinvested
+      file: ./src/mapping.ts

@@ -77,7 +77,7 @@ type Position @entity { # open position
   oraclePrice: BigInt!
   margin: BigInt!
 
-  amount: BigInt
+  amount: BigInt!
 
   owner: Bytes!
 
@@ -107,7 +107,8 @@ type Transaction @entity { # open or close
   margin: BigInt!
   leverage: BigInt!
 
-  amount: BigInt
+  amount: BigInt!
+  singleAmount: BigInt!
 
   price: BigInt!
 
@@ -122,6 +123,20 @@ type Transaction @entity { # open or close
 
 type User @entity {
   id: ID! # user address
+  userNumber: BigInt
+  createdAtTimestamp: BigInt
+  depositAmount: BigInt
+  withdrawAmount: BigInt
+  shares: BigInt
+  reward: BigInt
+  remainingAmount: BigInt
+  netAmount: BigInt
+  netAmountWithReward: BigInt
+
+  tradeCount: BigInt
+  volume: BigInt
+  fees: BigInt
+  pnl: BigInt
 }
 
 type Trade @entity { # closed position
@@ -201,4 +216,5 @@ type Stake @entity {
   timestamp: BigInt
 
 }
+
 

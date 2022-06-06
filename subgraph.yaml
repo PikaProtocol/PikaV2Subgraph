@@ -3,11 +3,11 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: PikaPerpV2Rinkeby
+    name: PikaPerpV3
     network: optimism
     source:
-      address: "0x2FaE8C7Edd26213cA1A88fC57B65352dbe353698"
-      abi: PikaPerpV2
+      address: "0xCcB94ecc64F1D8Fb671C2D7E8b5F2e005C22d3CA"
+      abi: PikaPerpV3
       startBlock: 0
     mapping:
       kind: ethereum/events
@@ -28,14 +28,14 @@ dataSources:
         - PikaRewardDistributed
         - VaultRewardDistributed
       abis:
-        - name: PikaPerpV2
-          file: ./abis/PikaPerpV2.json
+        - name: PikaPerpV3
+          file: ./abis/PikaPerpV3.json
       eventHandlers:
-        - event: AddMargin(indexed uint256,indexed address,uint256,uint256,uint256)
+        - event: AddMargin(indexed uint256,indexed address,indexed address,uint256,uint256,uint256)
           handler: handleAddMargin
         - event: ClosePosition(indexed uint256,indexed address,indexed uint256,uint256,uint256,uint256,uint256,uint256,int256,bool)
           handler: handleClosePosition
-        - event: NewPosition(indexed uint256,indexed address,indexed uint256,bool,uint256,uint256,uint256,uint256,uint256)
+        - event: NewPosition(indexed uint256,indexed address,indexed uint256,bool,uint256,uint256,uint256,uint256,uint256,bool)
           handler: handleNewPosition
         - event: OwnerUpdated(address)
           handler: handleOwnerUpdated
@@ -45,7 +45,7 @@ dataSources:
           handler: handleProductAdded
         - event: ProductUpdated(uint256,(address,uint72,uint16,bool,uint64,uint64,uint16,uint16,uint16,uint16,uint16,uint64))
           handler: handleProductUpdated
-        - event: Redeemed(indexed address,uint256,uint256,uint256,bool)
+        - event: Redeemed(indexed address,indexed address,uint256,uint256,uint256,bool)
           handler: handleRedeemed
         - event: Staked(indexed address,uint256,uint256)
           handler: handleStaked
@@ -82,3 +82,83 @@ dataSources:
         - event: Reinvested(address,address,uint256)
           handler: handleReinvested
       file: ./src/mapping.ts
+
+  - kind: ethereum/contract
+    name: OrderBook
+    network: optimism
+    source:
+      address: "0x57624d1d88757bf159B4CD8709EC185D639Bf730"
+      abi: OrderBook
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - CreateOpenOrder
+        - CancelOpenOrder
+        - ExecuteOpenOrder
+        - UpdateOpenOrder
+        - CreateCloseOrder
+        - CancelCloseOrder
+        - ExecuteCloseOrder
+        - UpdateCloseOrder
+      abis:
+        - name: OrderBook
+          file: ./abis/OrderBook.json
+      eventHandlers:
+        - event: CreateOpenOrder(indexed address,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
+          handler: handleCreateOpenOrder
+        - event: CancelOpenOrder(indexed address,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
+          handler: handleCancelOpenOrde
+        - event: ExecuteOpenOrder(indexed address,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256,uint256)
+          handler: handleExecuteOpenOrder
+        - event: UpdateOpenOrder(indexed address,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256)
+          handler: handleUpdateOpenOrder
+        - event: CreateCloseOrder(indexed address,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
+          handler: handleCreateCloseOrder
+        - event: CancelCloseOrder(indexed address,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
+          handler: handleCancelCloseOrde
+        - event: ExecuteCloseOrder(indexed address,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256,uint256)
+          handler: handleExecuteCloseOrder
+        - event: UpdateCloseOrder(indexed address,uint256,uint256,uint256,bool,uint256,bool,uint256)
+          handler: handleUpdateCloseOrder
+
+      file: ./src/orders.ts
+
+  - kind: ethereum/contract
+    name: PositionManager
+    network: optimism
+    source:
+      address: "0xC9b595e7da37DdECb9F0f7ECF1ffd6135033939F"
+      abi: PositionManager
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - CreateOpenPosition
+        - CancelOpenPosition
+        - ExecuteOpenPosition
+        - CreateClosePosition
+        - CancelClosePosition
+        - ExecuteClosePosition
+      abis:
+        - name: PositionManager
+          file: ./abis/PositionManager.json
+      eventHandlers:
+        - event: CreateOpenPosition(indexed address,uint256,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256,uint256)
+          handler: handleCreateOpenPosition
+        - event: CancelOpenPosition(indexed address,uint256,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256)
+          handler: handleCancelOpenPosition
+        - event: ExecuteOpenPosition(indexed address,uint256,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256)
+          handler: handleExecuteOpenPosition
+        - event: CreateClosePosition(indexed address,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256)
+          handler: handleCreateClosePosition
+        - event: CancelClosePosition(indexed address,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256)
+          handler: handleCancelClosePosition
+        - event: ExecuteClosePosition(indexed address,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256)
+          handler: handleExecuteClosePosition
+
+      file: ./src/orders.ts

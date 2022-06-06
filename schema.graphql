@@ -217,4 +217,78 @@ type Stake @entity {
 
 }
 
+enum OrderStatus {
+  open
+  cancelled
+  executed
+}
+
+type Order @entity {
+  id: ID!
+
+  type: String!
+  account: String!
+  status: OrderStatus!
+  productId: BigInt!
+  index: BigInt!
+  margin: BigInt!
+  leverage: BigInt!
+  size: BigInt!
+  isLong: Boolean!
+  isOpen: Boolean!
+  triggerPrice: BigInt!
+  triggerAboveThreshold: Boolean!
+  executionFee: BigInt
+
+  createdTimestamp: Int!
+  cancelledTimestamp: Int
+  executedTimestamp: Int
+}
+
+type MarketOrder @entity {
+  id: ID!
+
+  account: String!
+  status: OrderStatus!
+  productId: BigInt!
+  index: BigInt!
+  margin: BigInt!
+  leverage: BigInt!
+  size: BigInt!
+  isLong: Boolean!
+  isOpen: Boolean!
+  acceptablePrice: BigInt!
+  executionFee: BigInt
+
+  createdBlockNumber: Int!
+  createdTimestamp: Int!
+  executedBlockGap: Int
+  executedTimeGap: Int
+  cancelledBlockGap: Int
+  cancelledTimeGap: Int
+}
+
+type OrderStat @entity {
+  id: ID!
+
+  createOpenTrigger: Int!
+  createCloseTrigger: Int!
+
+  cancelledOpenTrigger: Int!
+  cancelledCloseTrigger: Int!
+
+  executedOpenTrigger: Int!
+  executedCloseTrigger: Int!
+
+  createOpenMarket: Int!
+  createCloseMarket: Int!
+
+  cancelledOpenMarket: Int!
+  cancelledCloseMarket: Int!
+
+  executedOpenMarket: Int!
+  executedCloseMarket: Int!
+}
+
+
 

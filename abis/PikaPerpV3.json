@@ -8,7 +8,7 @@
       },
       {
         "internalType":"uint256",
-        "name":"_tokenDecimal",
+        "name":"_tokenBase",
         "type":"uint256"
       },
       {
@@ -17,9 +17,9 @@
         "type":"address"
       },
       {
-        "internalType":"uint256",
-        "name":"_minMargin",
-        "type":"uint256"
+        "internalType":"address",
+        "name":"_feeCalculator",
+        "type":"address"
       }
     ],
     "stateMutability":"nonpayable",
@@ -33,6 +33,12 @@
         "internalType":"uint256",
         "name":"positionId",
         "type":"uint256"
+      },
+      {
+        "indexed":true,
+        "internalType":"address",
+        "name":"sender",
+        "type":"address"
       },
       {
         "indexed":true,
@@ -133,6 +139,19 @@
     "anonymous":false,
     "inputs":[
       {
+        "indexed":false,
+        "internalType":"address",
+        "name":"newGuardian",
+        "type":"address"
+      }
+    ],
+    "name":"GuardianUpdated",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
         "indexed":true,
         "internalType":"uint256",
         "name":"positionId",
@@ -185,22 +204,15 @@
         "internalType":"uint256",
         "name":"fee",
         "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"bool",
+        "name":"isNextPrice",
+        "type":"bool"
       }
     ],
     "name":"NewPosition",
-    "type":"event"
-  },
-  {
-    "anonymous":false,
-    "inputs":[
-      {
-        "indexed":false,
-        "internalType":"address",
-        "name":"newOracle",
-        "type":"address"
-      }
-    ],
-    "name":"OracleUpdated",
     "type":"event"
   },
   {
@@ -279,7 +291,7 @@
         "components":[
           {
             "internalType":"address",
-            "name":"feed",
+            "name":"productToken",
             "type":"address"
           },
           {
@@ -339,7 +351,7 @@
           }
         ],
         "indexed":false,
-        "internalType":"struct PikaPerpV2.Product",
+        "internalType":"struct PikaPerpV3.Product",
         "name":"product",
         "type":"tuple"
       }
@@ -360,7 +372,7 @@
         "components":[
           {
             "internalType":"address",
-            "name":"feed",
+            "name":"productToken",
             "type":"address"
           },
           {
@@ -420,7 +432,7 @@
           }
         ],
         "indexed":false,
-        "internalType":"struct PikaPerpV2.Product",
+        "internalType":"struct PikaPerpV3.Product",
         "name":"product",
         "type":"tuple"
       }
@@ -457,6 +469,12 @@
         "type":"address"
       },
       {
+        "indexed":true,
+        "internalType":"address",
+        "name":"receiver",
+        "type":"address"
+      },
+      {
         "indexed":false,
         "internalType":"uint256",
         "name":"amount",
@@ -482,25 +500,6 @@
       }
     ],
     "name":"Redeemed",
-    "type":"event"
-  },
-  {
-    "anonymous":false,
-    "inputs":[
-      {
-        "indexed":false,
-        "internalType":"uint256",
-        "name":"protocolRewardRatio",
-        "type":"uint256"
-      },
-      {
-        "indexed":false,
-        "internalType":"uint256",
-        "name":"pikaRewardRatio",
-        "type":"uint256"
-      }
-    ],
-    "name":"RewardRatioUpdated",
     "type":"event"
   },
   {
@@ -579,43 +578,13 @@
           }
         ],
         "indexed":false,
-        "internalType":"struct PikaPerpV2.Vault",
+        "internalType":"struct PikaPerpV3.Vault",
         "name":"vault",
         "type":"tuple"
       }
     ],
     "name":"VaultUpdated",
     "type":"event"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"BASE",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"BASE_DECIMALS",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
   },
   {
     "inputs":[
@@ -648,7 +617,7 @@
         "components":[
           {
             "internalType":"address",
-            "name":"feed",
+            "name":"productToken",
             "type":"address"
           },
           {
@@ -707,7 +676,7 @@
             "type":"uint64"
           }
         ],
-        "internalType":"struct PikaPerpV2.Product",
+        "internalType":"struct PikaPerpV3.Product",
         "name":"_product",
         "type":"tuple"
       }
@@ -722,12 +691,17 @@
   {
     "inputs":[
       {
-        "internalType":"uint256",
-        "name":"positionId",
-        "type":"uint256"
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      },
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
       }
     ],
-    "name":"canLiquidate",
+    "name":"approvedManagers",
     "outputs":[
       {
         "internalType":"bool",
@@ -740,6 +714,11 @@
   },
   {
     "inputs":[
+      {
+        "internalType":"address",
+        "name":"user",
+        "type":"address"
+      },
       {
         "internalType":"uint256",
         "name":"productId",
@@ -832,12 +811,12 @@
     "inputs":[
 
     ],
-    "name":"exposureMultiplier",
+    "name":"feeCalculator",
     "outputs":[
       {
-        "internalType":"uint256",
+        "internalType":"address",
         "name":"",
-        "type":"uint256"
+        "type":"address"
       }
     ],
     "stateMutability":"view",
@@ -909,51 +888,49 @@
     "name":"getPosition",
     "outputs":[
       {
-        "components":[
-          {
-            "internalType":"uint64",
-            "name":"productId",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
-            "name":"leverage",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
-            "name":"price",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
-            "name":"oraclePrice",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
-            "name":"margin",
-            "type":"uint64"
-          },
-          {
-            "internalType":"address",
-            "name":"owner",
-            "type":"address"
-          },
-          {
-            "internalType":"uint80",
-            "name":"timestamp",
-            "type":"uint80"
-          },
-          {
-            "internalType":"bool",
-            "name":"isLong",
-            "type":"bool"
-          }
-        ],
-        "internalType":"struct PikaPerpV2.Position",
-        "name":"position",
-        "type":"tuple"
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"bool",
+        "name":"",
+        "type":"bool"
       }
     ],
     "stateMutability":"view",
@@ -1036,12 +1013,22 @@
             "type":"uint80"
           },
           {
+            "internalType":"uint80",
+            "name":"averageTimestamp",
+            "type":"uint80"
+          },
+          {
             "internalType":"bool",
             "name":"isLong",
             "type":"bool"
+          },
+          {
+            "internalType":"bool",
+            "name":"isNextPrice",
+            "type":"bool"
           }
         ],
-        "internalType":"struct PikaPerpV2.Position[]",
+        "internalType":"struct PikaPerpV3.Position[]",
         "name":"_positions",
         "type":"tuple[]"
       }
@@ -1060,86 +1047,60 @@
     "name":"getProduct",
     "outputs":[
       {
-        "components":[
-          {
-            "internalType":"address",
-            "name":"feed",
-            "type":"address"
-          },
-          {
-            "internalType":"uint72",
-            "name":"maxLeverage",
-            "type":"uint72"
-          },
-          {
-            "internalType":"uint16",
-            "name":"fee",
-            "type":"uint16"
-          },
-          {
-            "internalType":"bool",
-            "name":"isActive",
-            "type":"bool"
-          },
-          {
-            "internalType":"uint64",
-            "name":"openInterestLong",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
-            "name":"openInterestShort",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint16",
-            "name":"interest",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"liquidationThreshold",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"liquidationBounty",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"minPriceChange",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"weight",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint64",
-            "name":"reserve",
-            "type":"uint64"
-          }
-        ],
-        "internalType":"struct PikaPerpV2.Product",
-        "name":"",
-        "type":"tuple"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
         "internalType":"address",
-        "name":"stakeOwner",
+        "name":"",
         "type":"address"
-      }
-    ],
-    "name":"getShare",
-    "outputs":[
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"bool",
+        "name":"",
+        "type":"bool"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
       {
         "internalType":"uint256",
         "name":"",
@@ -1157,7 +1118,7 @@
         "type":"address"
       }
     ],
-    "name":"getShareBalance",
+    "name":"getShare",
     "outputs":[
       {
         "internalType":"uint256",
@@ -1201,7 +1162,7 @@
             "type":"uint32"
           }
         ],
-        "internalType":"struct PikaPerpV2.Stake",
+        "internalType":"struct PikaPerpV3.Stake",
         "name":"",
         "type":"tuple"
       }
@@ -1258,9 +1219,39 @@
             "type":"uint32"
           }
         ],
-        "internalType":"struct PikaPerpV2.Vault",
+        "internalType":"struct PikaPerpV3.Vault",
         "name":"",
         "type":"tuple"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"gov",
+    "outputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"guardian",
+    "outputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
       }
     ],
     "stateMutability":"view",
@@ -1283,14 +1274,18 @@
   },
   {
     "inputs":[
-
-    ],
-    "name":"liquidator",
-    "outputs":[
       {
         "internalType":"address",
         "name":"",
         "type":"address"
+      }
+    ],
+    "name":"liquidators",
+    "outputs":[
+      {
+        "internalType":"bool",
+        "name":"",
+        "type":"bool"
       }
     ],
     "stateMutability":"view",
@@ -1298,14 +1293,18 @@
   },
   {
     "inputs":[
-
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
     ],
-    "name":"maxPositionMargin",
+    "name":"managers",
     "outputs":[
       {
-        "internalType":"uint256",
+        "internalType":"bool",
         "name":"",
-        "type":"uint256"
+        "type":"bool"
       }
     ],
     "stateMutability":"view",
@@ -1316,21 +1315,6 @@
 
     ],
     "name":"maxShift",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"minMargin",
     "outputs":[
       {
         "internalType":"uint256",
@@ -1359,35 +1343,20 @@
   {
     "inputs":[
       {
-        "internalType":"uint256",
-        "name":"productId",
-        "type":"uint256"
-      },
-      {
-        "internalType":"uint256",
-        "name":"margin",
-        "type":"uint256"
-      },
-      {
-        "internalType":"bool",
-        "name":"isLong",
-        "type":"bool"
-      },
-      {
-        "internalType":"uint256",
-        "name":"leverage",
-        "type":"uint256"
+        "internalType":"address",
+        "name":"",
+        "type":"address"
       }
     ],
-    "name":"openPosition",
+    "name":"nextPriceManagers",
     "outputs":[
       {
-        "internalType":"uint256",
+        "internalType":"bool",
         "name":"",
-        "type":"uint256"
+        "type":"bool"
       }
     ],
-    "stateMutability":"payable",
+    "stateMutability":"view",
     "type":"function"
   },
   {
@@ -1418,13 +1387,9 @@
         "type":"uint256"
       }
     ],
-    "name":"openPositionForUser",
+    "name":"openPosition",
     "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"positionId",
-        "type":"uint256"
-      }
+
     ],
     "stateMutability":"payable",
     "type":"function"
@@ -1463,45 +1428,11 @@
     "inputs":[
 
     ],
-    "name":"pendingPikaReward",
+    "name":"pauseTrading",
     "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
 
     ],
-    "name":"pendingProtocolReward",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"pendingVaultReward",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
+    "stateMutability":"nonpayable",
     "type":"function"
   },
   {
@@ -1567,9 +1498,19 @@
   {
     "inputs":[
       {
+        "internalType":"address",
+        "name":"user",
+        "type":"address"
+      },
+      {
         "internalType":"uint256",
         "name":"shares",
         "type":"uint256"
+      },
+      {
+        "internalType":"address",
+        "name":"receiver",
+        "type":"address"
       }
     ],
     "name":"redeem",
@@ -1582,32 +1523,17 @@
   {
     "inputs":[
       {
-        "internalType":"uint256",
-        "name":"positionId",
-        "type":"uint256"
-      }
-    ],
-    "name":"releaseMargin",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"bool",
-        "name":"_canUserStake",
-        "type":"bool"
+        "internalType":"address",
+        "name":"_manager",
+        "type":"address"
       },
       {
         "internalType":"bool",
-        "name":"_allowPublicLiquidator",
+        "name":"_isActive",
         "type":"bool"
       }
     ],
-    "name":"setCanUserStakeAndAllowPublicLiquidator",
+    "name":"setAccountManager",
     "outputs":[
 
     ],
@@ -1647,12 +1573,12 @@
   {
     "inputs":[
       {
-        "internalType":"uint256",
-        "name":"_exposureMultiplier",
-        "type":"uint256"
+        "internalType":"address",
+        "name":"_guardian",
+        "type":"address"
       }
     ],
-    "name":"setExposureMultiplier",
+    "name":"setGuardian",
     "outputs":[
 
     ],
@@ -1665,6 +1591,11 @@
         "internalType":"address",
         "name":"_liquidator",
         "type":"address"
+      },
+      {
+        "internalType":"bool",
+        "name":"_isActive",
+        "type":"bool"
       }
     ],
     "name":"setLiquidator",
@@ -1677,17 +1608,87 @@
   {
     "inputs":[
       {
+        "internalType":"address",
+        "name":"_manager",
+        "type":"address"
+      },
+      {
+        "internalType":"bool",
+        "name":"_isActive",
+        "type":"bool"
+      }
+    ],
+    "name":"setManager",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
         "internalType":"uint256",
         "name":"_minMargin",
         "type":"uint256"
-      },
-      {
-        "internalType":"uint256",
-        "name":"_maxPositionMargin",
-        "type":"uint256"
       }
     ],
-    "name":"setMargin",
+    "name":"setMinMargin",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
+        "name":"_nextPriceManager",
+        "type":"address"
+      },
+      {
+        "internalType":"bool",
+        "name":"_isActive",
+        "type":"bool"
+      }
+    ],
+    "name":"setNextPriceManager",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
+        "name":"_oracle",
+        "type":"address"
+      },
+      {
+        "internalType":"address",
+        "name":"_feeCalculator",
+        "type":"address"
+      }
+    ],
+    "name":"setOracleAndFeeCalculator",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
+        "name":"_owner",
+        "type":"address"
+      }
+    ],
+    "name":"setOwner",
     "outputs":[
 
     ],
@@ -1705,39 +1706,44 @@
         "internalType":"uint256",
         "name":"_minProfitTime",
         "type":"uint256"
-      }
-    ],
-    "name":"setMaxShiftAndMinProfitTime",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
+      },
       {
-        "internalType":"address",
-        "name":"_oracle",
-        "type":"address"
-      }
-    ],
-    "name":"setOracle",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
+        "internalType":"bool",
+        "name":"_canUserStake",
+        "type":"bool"
+      },
       {
-        "internalType":"address",
-        "name":"_owner",
-        "type":"address"
+        "internalType":"bool",
+        "name":"_allowPublicLiquidator",
+        "type":"bool"
+      },
+      {
+        "internalType":"bool",
+        "name":"_isManagerOnlyForOpen",
+        "type":"bool"
+      },
+      {
+        "internalType":"bool",
+        "name":"_isManagerOnlyForClose",
+        "type":"bool"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_exposureMultiplier",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_utilizationMultiplier",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_shiftDivider",
+        "type":"uint256"
       }
     ],
-    "name":"setOwner",
+    "name":"setParameters",
     "outputs":[
 
     ],
@@ -1767,16 +1773,16 @@
   {
     "inputs":[
       {
-        "internalType":"uint256",
-        "name":"amount",
-        "type":"uint256"
+        "internalType":"bool",
+        "name":"_isTradeEnabled",
+        "type":"bool"
       }
     ],
-    "name":"stake",
+    "name":"setTradeEnabled",
     "outputs":[
 
     ],
-    "stateMutability":"payable",
+    "stateMutability":"nonpayable",
     "type":"function"
   },
   {
@@ -1792,56 +1798,11 @@
         "type":"address"
       }
     ],
-    "name":"stakeForUser",
+    "name":"stake",
     "outputs":[
 
     ],
     "stateMutability":"payable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"token",
-    "outputs":[
-      {
-        "internalType":"address",
-        "name":"",
-        "type":"address"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"tokenBase",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"tokenDecimal",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
     "type":"function"
   },
   {
@@ -1885,7 +1846,7 @@
         "components":[
           {
             "internalType":"address",
-            "name":"feed",
+            "name":"productToken",
             "type":"address"
           },
           {
@@ -1944,7 +1905,7 @@
             "type":"uint64"
           }
         ],
-        "internalType":"struct PikaPerpV2.Product",
+        "internalType":"struct PikaPerpV3.Product",
         "name":"_product",
         "type":"tuple"
       }
@@ -1986,7 +1947,7 @@
             "type":"uint32"
           }
         ],
-        "internalType":"struct PikaPerpV2.Vault",
+        "internalType":"struct PikaPerpV3.Vault",
         "name":"_vault",
         "type":"tuple"
       }
@@ -1996,21 +1957,6 @@
 
     ],
     "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"utilizationMultiplier",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
     "type":"function"
   },
   {

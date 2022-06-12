@@ -68,8 +68,6 @@ export function handleNewPosition(event: NewPosition): void {
   transaction.amount = amount
   transaction.price = event.params.price
   transaction.isLong = event.params.isLong
-  let tradeFee = amount.times(product.fee).div(FEE_BI)
-  transaction.tradeFee = tradeFee
   transaction.timestamp = event.block.timestamp
   transaction.blockNumber = event.block.number
 
@@ -83,6 +81,8 @@ export function handleNewPosition(event: NewPosition): void {
     singleAmount = amount.minus(position.amount)
   }
   transaction.singleAmount = singleAmount
+  let tradeFee = singleAmount.times(product.fee).div(FEE_BI)
+  transaction.tradeFee = tradeFee
   position.productId = event.params.productId
   position.leverage = event.params.leverage
   position.price = event.params.price

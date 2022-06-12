@@ -125,6 +125,12 @@
       },
       {
         "indexed":false,
+        "internalType":"uint256",
+        "name":"tradeFee",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
         "internalType":"bool",
         "name":"isLong",
         "type":"bool"
@@ -253,6 +259,12 @@
       },
       {
         "indexed":false,
+        "internalType":"uint256",
+        "name":"tradeFee",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
         "internalType":"bool",
         "name":"isLong",
         "type":"bool"
@@ -363,15 +375,15 @@
     "inputs":[
       {
         "indexed":false,
-        "internalType":"bytes32",
-        "name":"",
-        "type":"bytes32"
-      },
-      {
-        "indexed":false,
         "internalType":"address",
         "name":"",
         "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
       },
       {
         "indexed":false,
@@ -408,6 +420,12 @@
         "indexed":false,
         "internalType":"uint256",
         "name":"leverage",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"tradeFee",
         "type":"uint256"
       },
       {
@@ -455,15 +473,15 @@
     "inputs":[
       {
         "indexed":false,
-        "internalType":"bytes32",
-        "name":"",
-        "type":"bytes32"
-      },
-      {
-        "indexed":false,
         "internalType":"address",
         "name":"",
         "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
       },
       {
         "indexed":false,
@@ -631,6 +649,21 @@
 
     ],
     "name":"BASE",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"FEE_BASE",
     "outputs":[
       {
         "internalType":"uint256",
@@ -983,6 +1016,26 @@
   {
     "inputs":[
       {
+        "internalType":"uint256",
+        "name":"n",
+        "type":"uint256"
+      },
+      {
+        "internalType":"address payable",
+        "name":"_executionFeeReceiver",
+        "type":"address"
+      }
+    ],
+    "name":"executeNPositions",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
         "internalType":"bytes32",
         "name":"_key",
         "type":"bytes32"
@@ -1239,6 +1292,11 @@
             "type":"uint256"
           },
           {
+            "internalType":"uint256",
+            "name":"tradeFee",
+            "type":"uint256"
+          },
+          {
             "internalType":"bool",
             "name":"isLong",
             "type":"bool"
@@ -1307,6 +1365,11 @@
           {
             "internalType":"uint256",
             "name":"leverage",
+            "type":"uint256"
+          },
+          {
+            "internalType":"uint256",
+            "name":"tradeFee",
             "type":"uint256"
           },
           {
@@ -1606,6 +1669,11 @@
         "type":"uint256"
       },
       {
+        "internalType":"uint256",
+        "name":"tradeFee",
+        "type":"uint256"
+      },
+      {
         "internalType":"bool",
         "name":"isLong",
         "type":"bool"
@@ -1867,6 +1935,36 @@
       }
     ],
     "name":"setPositionKeeper",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address[]",
+        "name":"tokens",
+        "type":"address[]"
+      },
+      {
+        "internalType":"uint256[]",
+        "name":"prices",
+        "type":"uint256[]"
+      },
+      {
+        "internalType":"uint256",
+        "name":"n",
+        "type":"uint256"
+      },
+      {
+        "internalType":"address payable",
+        "name":"_executionFeeReceiver",
+        "type":"address"
+      }
+    ],
+    "name":"setPricesAndExecuteNPositions",
     "outputs":[
 
     ],

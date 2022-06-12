@@ -63,7 +63,7 @@ dataSources:
     name: VaultFeeReward
     network: optimism
     source:
-      address: "0x58488bb666d2da33f8e8938dbdd582d2481d4183"
+      address: "0xD85379e2FA8876777F85E9FE2E4a787e4c9f197D"
       abi: VaultFeeReward
       startBlock: 0
     mapping:
@@ -87,7 +87,7 @@ dataSources:
     name: OrderBook
     network: optimism
     source:
-      address: "0x57624d1d88757bf159B4CD8709EC185D639Bf730"
+      address: "0x1997943aFcf4AB46811494E01C05b634E982E70c"
       abi: OrderBook
       startBlock: 0
     mapping:
@@ -107,18 +107,18 @@ dataSources:
         - name: OrderBook
           file: ./abis/OrderBook.json
       eventHandlers:
-        - event: CreateOpenOrder(indexed address,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
+        - event: CreateOpenOrder(indexed address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
           handler: handleCreateOpenOrder
-        - event: CancelOpenOrder(indexed address,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
-          handler: handleCancelOpenOrde
-        - event: ExecuteOpenOrder(indexed address,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256,uint256)
+        - event: CancelOpenOrder(indexed address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
+          handler: handleCancelOpenOrder
+        - event: ExecuteOpenOrder(indexed address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256,uint256)
           handler: handleExecuteOpenOrder
-        - event: UpdateOpenOrder(indexed address,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256)
+        - event: UpdateOpenOrder(indexed address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256)
           handler: handleUpdateOpenOrder
         - event: CreateCloseOrder(indexed address,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
           handler: handleCreateCloseOrder
         - event: CancelCloseOrder(indexed address,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
-          handler: handleCancelCloseOrde
+          handler: handleCancelCloseOrder
         - event: ExecuteCloseOrder(indexed address,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256,uint256)
           handler: handleExecuteCloseOrder
         - event: UpdateCloseOrder(indexed address,uint256,uint256,uint256,bool,uint256,bool,uint256)
@@ -130,7 +130,7 @@ dataSources:
     name: PositionManager
     network: optimism
     source:
-      address: "0xC9b595e7da37DdECb9F0f7ECF1ffd6135033939F"
+      address: "0xF11fc87bF8B13e13E64C7cb600886f85d26f4a55"
       abi: PositionManager
       startBlock: 0
     mapping:
@@ -148,11 +148,11 @@ dataSources:
         - name: PositionManager
           file: ./abis/PositionManager.json
       eventHandlers:
-        - event: CreateOpenPosition(indexed address,uint256,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256,uint256)
+        - event: CreateOpenPosition(indexed address,uint256,uint256,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleCreateOpenPosition
-        - event: CancelOpenPosition(indexed address,uint256,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256)
+        - event: CancelOpenPosition(indexed address,uint256,uint256,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256)
           handler: handleCancelOpenPosition
-        - event: ExecuteOpenPosition(indexed address,uint256,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256)
+        - event: ExecuteOpenPosition(indexed address,uint256,uint256,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256)
           handler: handleExecuteOpenPosition
         - event: CreateClosePosition(indexed address,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256)
           handler: handleCreateClosePosition

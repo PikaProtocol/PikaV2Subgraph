@@ -233,6 +233,7 @@ type Order @entity {
   index: BigInt!
   margin: BigInt!
   leverage: BigInt!
+  tradeFee: BigInt!
   size: BigInt!
   isLong: Boolean!
   isOpen: Boolean!
@@ -254,6 +255,7 @@ type MarketOrder @entity {
   index: BigInt!
   margin: BigInt!
   leverage: BigInt!
+  tradeFee: BigInt!
   size: BigInt!
   isLong: Boolean!
   isOpen: Boolean!
@@ -288,6 +290,14 @@ type OrderStat @entity {
 
   executedOpenMarket: Int!
   executedCloseMarket: Int!
+}
+
+type Activity @entity {
+  id: ID!
+
+  account: String!
+  activity: String!
+
 }
 
 

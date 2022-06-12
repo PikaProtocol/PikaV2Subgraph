@@ -131,6 +131,12 @@
       },
       {
         "indexed":false,
+        "internalType":"uint256",
+        "name":"tradeFee",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
         "internalType":"bool",
         "name":"isLong",
         "type":"bool"
@@ -259,6 +265,12 @@
       },
       {
         "indexed":false,
+        "internalType":"uint256",
+        "name":"tradeFee",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
         "internalType":"bool",
         "name":"isLong",
         "type":"bool"
@@ -362,6 +374,31 @@
     "anonymous":false,
     "inputs":[
       {
+        "indexed":false,
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"string",
+        "name":"",
+        "type":"string"
+      }
+    ],
+    "name":"ExecuteCloseOrderError",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
         "indexed":true,
         "internalType":"address",
         "name":"account",
@@ -389,6 +426,12 @@
         "indexed":false,
         "internalType":"uint256",
         "name":"leverage",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"tradeFee",
         "type":"uint256"
       },
       {
@@ -429,6 +472,31 @@
       }
     ],
     "name":"ExecuteOpenOrder",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"string",
+        "name":"",
+        "type":"string"
+      }
+    ],
+    "name":"ExecuteOpenOrderError",
     "type":"event"
   },
   {
@@ -579,6 +647,12 @@
       },
       {
         "indexed":false,
+        "internalType":"uint256",
+        "name":"tradeFee",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
         "internalType":"bool",
         "name":"isLong",
         "type":"bool"
@@ -627,6 +701,21 @@
 
     ],
     "name":"BASE",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"FEE_BASE",
     "outputs":[
       {
         "internalType":"uint256",
@@ -1185,6 +1274,11 @@
       {
         "internalType":"uint256",
         "name":"leverage",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"tradeFee",
         "type":"uint256"
       },
       {

@@ -374,21 +374,21 @@
     "anonymous":false,
     "inputs":[
       {
-        "indexed":false,
+        "indexed":true,
         "internalType":"address",
-        "name":"",
+        "name":"account",
         "type":"address"
       },
       {
         "indexed":false,
         "internalType":"uint256",
-        "name":"",
+        "name":"index",
         "type":"uint256"
       },
       {
         "indexed":false,
         "internalType":"string",
-        "name":"",
+        "name":"executionError",
         "type":"string"
       }
     ],
@@ -472,21 +472,21 @@
     "anonymous":false,
     "inputs":[
       {
-        "indexed":false,
+        "indexed":true,
         "internalType":"address",
-        "name":"",
+        "name":"account",
         "type":"address"
       },
       {
         "indexed":false,
         "internalType":"uint256",
-        "name":"",
+        "name":"index",
         "type":"uint256"
       },
       {
         "indexed":false,
         "internalType":"string",
-        "name":"",
+        "name":"executionError",
         "type":"string"
       }
     ],
@@ -538,7 +538,13 @@
       {
         "indexed":false,
         "internalType":"uint256",
-        "name":"minBlockDelayKeeper",
+        "name":"minBlockDelayPositionKeeper",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"minBlockDelayPriceKeeper",
         "type":"uint256"
       },
       {
@@ -619,6 +625,25 @@
       }
     ],
     "name":"SetPositionKeeper",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":true,
+        "internalType":"address",
+        "name":"account",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"bool",
+        "name":"isActive",
+        "type":"bool"
+      }
+    ],
+    "name":"SetPriceKeeper",
     "type":"event"
   },
   {
@@ -709,6 +734,36 @@
 
     ],
     "name":"allowUserCloseOnly",
+    "outputs":[
+      {
+        "internalType":"bool",
+        "name":"",
+        "type":"bool"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"canPositionKeeperExecute",
+    "outputs":[
+      {
+        "internalType":"bool",
+        "name":"",
+        "type":"bool"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"canPriceKeeperExecute",
     "outputs":[
       {
         "internalType":"bool",
@@ -1036,6 +1091,36 @@
   {
     "inputs":[
       {
+        "internalType":"address[]",
+        "name":"tokens",
+        "type":"address[]"
+      },
+      {
+        "internalType":"uint256[]",
+        "name":"prices",
+        "type":"uint256[]"
+      },
+      {
+        "internalType":"uint256",
+        "name":"n",
+        "type":"uint256"
+      },
+      {
+        "internalType":"address payable",
+        "name":"_executionFeeReceiver",
+        "type":"address"
+      }
+    ],
+    "name":"executeNPositionsWithPrices",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
         "internalType":"bytes32",
         "name":"_key",
         "type":"bytes32"
@@ -1096,6 +1181,41 @@
       }
     ],
     "name":"executePositions",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address[]",
+        "name":"tokens",
+        "type":"address[]"
+      },
+      {
+        "internalType":"uint256[]",
+        "name":"prices",
+        "type":"uint256[]"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_openEndIndex",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_closeEndIndex",
+        "type":"uint256"
+      },
+      {
+        "internalType":"address payable",
+        "name":"_executionFeeReceiver",
+        "type":"address"
+      }
+    ],
+    "name":"executePositionsWithPrices",
     "outputs":[
 
     ],
@@ -1501,6 +1621,40 @@
   },
   {
     "inputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "name":"isPriceKeeper",
+    "outputs":[
+      {
+        "internalType":"bool",
+        "name":"",
+        "type":"bool"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"isPriceKeeperCall",
+    "outputs":[
+      {
+        "internalType":"bool",
+        "name":"",
+        "type":"bool"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
 
     ],
     "name":"isUserCancelEnabled",
@@ -1548,7 +1702,22 @@
     "inputs":[
 
     ],
-    "name":"minBlockDelayKeeper",
+    "name":"minBlockDelayPositionKeeper",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"minBlockDelayPriceKeeper",
     "outputs":[
       {
         "internalType":"uint256",
@@ -1805,7 +1974,12 @@
     "inputs":[
       {
         "internalType":"uint256",
-        "name":"_minBlockDelayKeeper",
+        "name":"_minBlockDelayPositionKeeper",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_minBlockDelayPriceKeeper",
         "type":"uint256"
       },
       {
@@ -1944,62 +2118,17 @@
   {
     "inputs":[
       {
-        "internalType":"address[]",
-        "name":"tokens",
-        "type":"address[]"
-      },
-      {
-        "internalType":"uint256[]",
-        "name":"prices",
-        "type":"uint256[]"
-      },
-      {
-        "internalType":"uint256",
-        "name":"n",
-        "type":"uint256"
-      },
-      {
-        "internalType":"address payable",
-        "name":"_executionFeeReceiver",
+        "internalType":"address",
+        "name":"_account",
         "type":"address"
+      },
+      {
+        "internalType":"bool",
+        "name":"_isActive",
+        "type":"bool"
       }
     ],
-    "name":"setPricesAndExecuteNPositions",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"address[]",
-        "name":"tokens",
-        "type":"address[]"
-      },
-      {
-        "internalType":"uint256[]",
-        "name":"prices",
-        "type":"uint256[]"
-      },
-      {
-        "internalType":"uint256",
-        "name":"_openEndIndex",
-        "type":"uint256"
-      },
-      {
-        "internalType":"uint256",
-        "name":"_closeEndIndex",
-        "type":"uint256"
-      },
-      {
-        "internalType":"address payable",
-        "name":"_executionFeeReceiver",
-        "type":"address"
-      }
-    ],
-    "name":"setPricesAndExecutePositions",
+    "name":"setPriceKeeper",
     "outputs":[
 
     ],

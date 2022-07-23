@@ -6,7 +6,7 @@ dataSources:
     name: PikaPerpV3
     network: optimism
     source:
-      address: "0xCcB94ecc64F1D8Fb671C2D7E8b5F2e005C22d3CA"
+      address: "0xD5A8f233CBdDb40368D55C3320644Fb36e597002"
       abi: PikaPerpV3
       startBlock: 0
     mapping:
@@ -33,23 +33,23 @@ dataSources:
       eventHandlers:
         - event: AddMargin(indexed uint256,indexed address,indexed address,uint256,uint256,uint256)
           handler: handleAddMargin
-        - event: ClosePosition(indexed uint256,indexed address,indexed uint256,uint256,uint256,uint256,uint256,uint256,int256,bool)
+        - event: ClosePosition(indexed uint256,indexed address,indexed uint256,uint256,uint256,uint256,uint256,uint256,int256,int256,bool)
           handler: handleClosePosition
-        - event: NewPosition(indexed uint256,indexed address,indexed uint256,bool,uint256,uint256,uint256,uint256,uint256,bool)
+        - event: NewPosition(indexed uint256,indexed address,indexed uint256,bool,uint256,uint256,uint256,uint256,uint256,bool,int256)
           handler: handleNewPosition
         - event: OwnerUpdated(address)
           handler: handleOwnerUpdated
         - event: PositionLiquidated(indexed uint256,indexed address,uint256,uint256)
           handler: handlePositionLiquidated
-        - event: ProductAdded(uint256,(address,uint72,uint16,bool,uint64,uint64,uint16,uint16,uint16,uint16,uint16,uint64))
+        - event: ProductAdded(uint256,(address,uint72,uint16,bool,uint64,uint64,uint32,uint32,uint64))
           handler: handleProductAdded
-        - event: ProductUpdated(uint256,(address,uint72,uint16,bool,uint64,uint64,uint16,uint16,uint16,uint16,uint16,uint64))
+        - event: ProductUpdated(uint256,(address,uint72,uint16,bool,uint64,uint64,uint32,uint32,uint64))
           handler: handleProductUpdated
         - event: Redeemed(indexed address,indexed address,uint256,uint256,uint256,bool)
           handler: handleRedeemed
         - event: Staked(indexed address,uint256,uint256)
           handler: handleStaked
-        - event: VaultUpdated((uint96,uint96,uint64,uint64,uint32))
+        - event: VaultUpdated((uint128,uint128,uint96,uint96,uint64))
           handler: handleVaultUpdated
         - event: ProtocolRewardDistributed(address,uint256)
           handler: handleProtocolRewardDistributed
@@ -63,7 +63,7 @@ dataSources:
     name: VaultFeeReward
     network: optimism
     source:
-      address: "0xD85379e2FA8876777F85E9FE2E4a787e4c9f197D"
+      address: "0x939c11c596B851447e5220584d37F12854bA02ae"
       abi: VaultFeeReward
       startBlock: 0
     mapping:
@@ -87,7 +87,7 @@ dataSources:
     name: OrderBook
     network: optimism
     source:
-      address: "0x1997943aFcf4AB46811494E01C05b634E982E70c"
+      address: "0xA0BE4c09a03F5F91c68F18EAc598155812101Be3"
       abi: OrderBook
       startBlock: 0
     mapping:
@@ -106,6 +106,8 @@ dataSources:
       abis:
         - name: OrderBook
           file: ./abis/OrderBook.json
+        - name: PikaPerpV3
+          file: ./abis/PikaPerpV3.json
       eventHandlers:
         - event: CreateOpenOrder(indexed address,uint256,uint256,uint256,uint256,uint256,bool,uint256,bool,uint256,uint256)
           handler: handleCreateOpenOrder
@@ -130,7 +132,7 @@ dataSources:
     name: PositionManager
     network: optimism
     source:
-      address: "0xF11fc87bF8B13e13E64C7cb600886f85d26f4a55"
+      address: "0x8adD31BC901214A37f3bb676Cb90AD62B24fd9a5"
       abi: PositionManager
       startBlock: 0
     mapping:
@@ -147,6 +149,8 @@ dataSources:
       abis:
         - name: PositionManager
           file: ./abis/PositionManager.json
+        - name: PikaPerpV3
+          file: ./abis/PikaPerpV3.json
       eventHandlers:
         - event: CreateOpenPosition(indexed address,uint256,uint256,uint256,uint256,bool,uint256,uint256,uint256,uint256,uint256,uint256)
           handler: handleCreateOpenPosition

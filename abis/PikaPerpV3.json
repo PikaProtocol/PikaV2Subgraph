@@ -20,6 +20,11 @@
         "internalType":"address",
         "name":"_feeCalculator",
         "type":"address"
+      },
+      {
+        "internalType":"address",
+        "name":"_fundingManager",
+        "type":"address"
       }
     ],
     "stateMutability":"nonpayable",
@@ -127,6 +132,12 @@
       },
       {
         "indexed":false,
+        "internalType":"int256",
+        "name":"fundingPayment",
+        "type":"int256"
+      },
+      {
+        "indexed":false,
         "internalType":"bool",
         "name":"wasLiquidated",
         "type":"bool"
@@ -210,6 +221,12 @@
         "internalType":"bool",
         "name":"isNextPrice",
         "type":"bool"
+      },
+      {
+        "indexed":false,
+        "internalType":"int256",
+        "name":"fundingRate",
+        "type":"int256"
       }
     ],
     "name":"NewPosition",
@@ -320,29 +337,14 @@
             "type":"uint64"
           },
           {
-            "internalType":"uint16",
-            "name":"interest",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"liquidationThreshold",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"liquidationBounty",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
+            "internalType":"uint32",
             "name":"minPriceChange",
-            "type":"uint16"
+            "type":"uint32"
           },
           {
-            "internalType":"uint16",
+            "internalType":"uint32",
             "name":"weight",
-            "type":"uint16"
+            "type":"uint32"
           },
           {
             "internalType":"uint64",
@@ -401,29 +403,14 @@
             "type":"uint64"
           },
           {
-            "internalType":"uint16",
-            "name":"interest",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"liquidationThreshold",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"liquidationBounty",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
+            "internalType":"uint32",
             "name":"minPriceChange",
-            "type":"uint16"
+            "type":"uint32"
           },
           {
-            "internalType":"uint16",
+            "internalType":"uint32",
             "name":"weight",
-            "type":"uint16"
+            "type":"uint32"
           },
           {
             "internalType":"uint64",
@@ -552,29 +539,29 @@
       {
         "components":[
           {
-            "internalType":"uint96",
+            "internalType":"uint128",
             "name":"cap",
+            "type":"uint128"
+          },
+          {
+            "internalType":"uint128",
+            "name":"balance",
+            "type":"uint128"
+          },
+          {
+            "internalType":"uint96",
+            "name":"staked",
             "type":"uint96"
           },
           {
             "internalType":"uint96",
-            "name":"balance",
+            "name":"shares",
             "type":"uint96"
           },
           {
             "internalType":"uint64",
-            "name":"staked",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
-            "name":"shares",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint32",
             "name":"stakingPeriod",
-            "type":"uint32"
+            "type":"uint64"
           }
         ],
         "indexed":false,
@@ -646,29 +633,14 @@
             "type":"uint64"
           },
           {
-            "internalType":"uint16",
-            "name":"interest",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"liquidationThreshold",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"liquidationBounty",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
+            "internalType":"uint32",
             "name":"minPriceChange",
-            "type":"uint16"
+            "type":"uint32"
           },
           {
-            "internalType":"uint16",
+            "internalType":"uint32",
             "name":"weight",
-            "type":"uint16"
+            "type":"uint32"
           },
           {
             "internalType":"uint64",
@@ -811,12 +783,61 @@
     "inputs":[
 
     ],
+    "name":"exposureMultiplier",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
     "name":"feeCalculator",
     "outputs":[
       {
         "internalType":"address",
         "name":"",
         "type":"address"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"fundingManager",
+    "outputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"uint256",
+        "name":"productWeight",
+        "type":"uint256"
+      }
+    ],
+    "name":"getMaxExposure",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
       }
     ],
     "stateMutability":"view",
@@ -923,14 +944,14 @@
         "type":"uint256"
       },
       {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      },
-      {
         "internalType":"bool",
         "name":"",
         "type":"bool"
+      },
+      {
+        "internalType":"int256",
+        "name":"",
+        "type":"int256"
       }
     ],
     "stateMutability":"view",
@@ -998,24 +1019,19 @@
             "type":"uint64"
           },
           {
-            "internalType":"uint64",
+            "internalType":"uint128",
             "name":"margin",
-            "type":"uint64"
+            "type":"uint128"
+          },
+          {
+            "internalType":"int128",
+            "name":"funding",
+            "type":"int128"
           },
           {
             "internalType":"address",
             "name":"owner",
             "type":"address"
-          },
-          {
-            "internalType":"uint80",
-            "name":"timestamp",
-            "type":"uint80"
-          },
-          {
-            "internalType":"uint80",
-            "name":"averageTimestamp",
-            "type":"uint80"
           },
           {
             "internalType":"bool",
@@ -1026,6 +1042,11 @@
             "internalType":"bool",
             "name":"isNextPrice",
             "type":"bool"
+          },
+          {
+            "internalType":"uint80",
+            "name":"timestamp",
+            "type":"uint80"
           }
         ],
         "internalType":"struct PikaPerpV3.Position[]",
@@ -1065,21 +1086,6 @@
         "internalType":"bool",
         "name":"",
         "type":"bool"
-      },
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      },
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      },
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
       },
       {
         "internalType":"uint256",
@@ -1147,19 +1153,19 @@
             "type":"address"
           },
           {
-            "internalType":"uint64",
+            "internalType":"uint96",
             "name":"amount",
-            "type":"uint64"
+            "type":"uint96"
           },
           {
-            "internalType":"uint64",
+            "internalType":"uint128",
             "name":"shares",
-            "type":"uint64"
+            "type":"uint128"
           },
           {
-            "internalType":"uint32",
+            "internalType":"uint128",
             "name":"timestamp",
-            "type":"uint32"
+            "type":"uint128"
           }
         ],
         "internalType":"struct PikaPerpV3.Stake",
@@ -1194,29 +1200,29 @@
       {
         "components":[
           {
-            "internalType":"uint96",
+            "internalType":"uint128",
             "name":"cap",
+            "type":"uint128"
+          },
+          {
+            "internalType":"uint128",
+            "name":"balance",
+            "type":"uint128"
+          },
+          {
+            "internalType":"uint96",
+            "name":"staked",
             "type":"uint96"
           },
           {
             "internalType":"uint96",
-            "name":"balance",
+            "name":"shares",
             "type":"uint96"
           },
           {
             "internalType":"uint64",
-            "name":"staked",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
-            "name":"shares",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint32",
             "name":"stakingPeriod",
-            "type":"uint32"
+            "type":"uint64"
           }
         ],
         "internalType":"struct PikaPerpV3.Vault",
@@ -1274,6 +1280,36 @@
   },
   {
     "inputs":[
+
+    ],
+    "name":"liquidationBounty",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"liquidationThreshold",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
       {
         "internalType":"address",
         "name":"",
@@ -1314,7 +1350,37 @@
     "inputs":[
 
     ],
+    "name":"maxExposureMultiplier",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
     "name":"maxShift",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"minMargin",
     "outputs":[
       {
         "internalType":"uint256",
@@ -1544,6 +1610,31 @@
     "inputs":[
       {
         "internalType":"address",
+        "name":"_oracle",
+        "type":"address"
+      },
+      {
+        "internalType":"address",
+        "name":"_feeCalculator",
+        "type":"address"
+      },
+      {
+        "internalType":"address",
+        "name":"_fundingManager",
+        "type":"address"
+      }
+    ],
+    "name":"setAddresses",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
         "name":"_protocolRewardDistributor",
         "type":"address"
       },
@@ -1664,26 +1755,6 @@
     "inputs":[
       {
         "internalType":"address",
-        "name":"_oracle",
-        "type":"address"
-      },
-      {
-        "internalType":"address",
-        "name":"_feeCalculator",
-        "type":"address"
-      }
-    ],
-    "name":"setOracleAndFeeCalculator",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"address",
         "name":"_owner",
         "type":"address"
       }
@@ -1739,6 +1810,21 @@
       },
       {
         "internalType":"uint256",
+        "name":"_maxExposureMultiplier",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_liquidationBounty",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_liquidationThreshold",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
         "name":"_shiftDivider",
         "type":"uint256"
       }
@@ -1783,6 +1869,21 @@
 
     ],
     "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"shiftDivider",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
     "type":"function"
   },
   {
@@ -1875,29 +1976,14 @@
             "type":"uint64"
           },
           {
-            "internalType":"uint16",
-            "name":"interest",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"liquidationThreshold",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
-            "name":"liquidationBounty",
-            "type":"uint16"
-          },
-          {
-            "internalType":"uint16",
+            "internalType":"uint32",
             "name":"minPriceChange",
-            "type":"uint16"
+            "type":"uint32"
           },
           {
-            "internalType":"uint16",
+            "internalType":"uint32",
             "name":"weight",
-            "type":"uint16"
+            "type":"uint32"
           },
           {
             "internalType":"uint64",
@@ -1922,29 +2008,29 @@
       {
         "components":[
           {
-            "internalType":"uint96",
+            "internalType":"uint128",
             "name":"cap",
+            "type":"uint128"
+          },
+          {
+            "internalType":"uint128",
+            "name":"balance",
+            "type":"uint128"
+          },
+          {
+            "internalType":"uint96",
+            "name":"staked",
             "type":"uint96"
           },
           {
             "internalType":"uint96",
-            "name":"balance",
+            "name":"shares",
             "type":"uint96"
           },
           {
             "internalType":"uint64",
-            "name":"staked",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint64",
-            "name":"shares",
-            "type":"uint64"
-          },
-          {
-            "internalType":"uint32",
             "name":"stakingPeriod",
-            "type":"uint32"
+            "type":"uint64"
           }
         ],
         "internalType":"struct PikaPerpV3.Vault",
@@ -1957,6 +2043,21 @@
 
     ],
     "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"utilizationMultiplier",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
     "type":"function"
   },
   {

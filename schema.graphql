@@ -35,7 +35,7 @@ type Vault @entity {
 type Product @entity {
   id: ID! # product id
 
-  feed: Bytes!
+  productToken: Bytes!
   maxLeverage: BigInt!
   fee: BigInt!
 
@@ -44,10 +44,6 @@ type Product @entity {
   openInterestLong: BigInt!
   openInterestShort: BigInt!
 
-  interest: BigInt!
-
-  liquidationThreshold: BigInt!
-  liquidationBounty: BigInt!
   minPriceChange: BigInt!
   weight: BigInt!
   reserve: BigInt!
@@ -84,6 +80,8 @@ type Position @entity { # open position
   liquidationPrice: BigInt
 
   isLong: Boolean!
+
+  funding: BigInt
 
   createdAtTimestamp: BigInt!
   createdAtBlockNumber: BigInt!
@@ -167,7 +165,7 @@ type Trade @entity { # closed position
   isFullClose: Boolean!
 
   tradeFee: BigInt!
-  interestFee: BigInt!
+  fundingPayment: BigInt!
 
   timestamp: BigInt!
   blockNumber: BigInt!
@@ -296,8 +294,19 @@ type Activity @entity {
   id: ID!
 
   account: String!
-  activity: String!
-
+  action: String!
+  type: String
+  productId: BigInt!
+  margin: BigInt
+  size: BigInt
+  isLong: Boolean
+  isOpen: Boolean
+  price: BigInt
+  triggerPrice: BigInt
+  triggerAboveThreshold: Boolean
+  acceptablePrice: BigInt
+  txHash: String!
+  timestamp: BigInt!
 }
 
 

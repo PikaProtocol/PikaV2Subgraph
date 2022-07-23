@@ -1,11 +1,11 @@
 import {
     BigInt,
     Address,
-    Bytes
+    Bytes,
     // TypedMap,
     // ethereum,
     // store,
-    // log
+    log
 } from "@graphprotocol/graph-ts"
 import {
     CreateOpenOrder,
@@ -30,20 +30,48 @@ import {
 import {
     Order,
     MarketOrder,
-    OrderStat
+    Position,
+    OrderStat,
+    Activity
 } from "../generated/schema"
 
+import { PikaPerpV3 } from "../generated/PikaPerpV3/PikaPerpV3";
+
+import {UNIT_BI} from "./mapping";
+
 export const BASE = BigInt.fromI32(100000000)
+export const PERP_ADDRESS = "0x85c4fF09a013568264354b81283110aD3621e43b";
 
 function _getId(account: Address, isOpen: boolean, index: BigInt): string {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     return id
 }
 
-function _storeActivity(account: Address, timestamp: BigInt, activity: string) {
-    let record = new Activity(account.toHexString() + timestamp.toString())
-    record.activity = activity
-    record.save()
+function _storeActivity(account: Address, action: String, order: Order, marketOrder: MarketOrder, txHash: String, timestamp: BigInt): void {
+    let activity = new Activity(account.toHexString() + timestamp.toString() + action)
+    activity.account = account.toHexString()
+    activity.action = action
+    if (order) {
+        activity.type = order.type
+        activity.margin = order.margin
+        activity.productId = order.productId
+        activity.isOpen = order.isOpen
+        activity.isLong = order.isLong
+        activity.size = order.size
+        activity.triggerPrice = order.triggerPrice
+        activity.triggerAboveThreshold = order.triggerAboveThreshold
+    } else {
+        activity.type = "market"
+        activity.margin = marketOrder.margin
+        activity.productId = marketOrder.productId
+        activity.isOpen = marketOrder.isOpen
+        activity.isLong = marketOrder.isLong
+        activity.size = marketOrder.size
+        activity.acceptablePrice = marketOrder.acceptablePrice
+    }
+    activity.txHash = txHash
+    activity.timestamp = timestamp
+    activity.save()
 }
 
 function _storeStats(incrementProp: string, decrementProp: string | null): void {
@@ -74,7 +102,7 @@ function _storeStats(incrementProp: string, decrementProp: string | null): void 
 
 function _handleCreateOrder(account: Address, isOpen: boolean, type: string, index: BigInt, productId: BigInt,
                             margin: BigInt, leverage: BigInt, size: BigInt, tradeFee: BigInt, isLong: boolean, triggerPrice: BigInt,
-                            triggerAboveThreshold: boolean, executionFee: BigInt, timestamp: BigInt): void {
+                            triggerAboveThreshold: boolean, executionFee: BigInt, txHash: String, timestamp: BigInt): void {
     let id = _getId(account, isOpen, index)
     let order = new Order(id)
 
@@ -95,11 +123,18 @@ function _handleCreateOrder(account: Address, isOpen: boolean, type: string, ind
     order.createdTimestamp = timestamp.toI32()
 
     order.save()
+    let action = ""
+    if (isOpen) {
+        action = "Created open order"
+    } else {
+        action = "Created close order"
+    }
+    _storeActivity(account, action, order, null, txHash, timestamp)
 }
 
 function _handleCreatePosition(account: Address, isOpen: boolean, index: BigInt, productId: BigInt, margin: BigInt,
                                leverage: BigInt, size: BigInt, tradeFee: BigInt, isLong: boolean, acceptablePrice: BigInt, executionFee: BigInt,
-                               blockNumber: BigInt, blockTime: BigInt): void {
+                               blockNumber: BigInt, txHash: String, blockTime: BigInt): void {
     let id = _getId(account, isOpen, index)
     let order = new MarketOrder(id)
 
@@ -119,9 +154,16 @@ function _handleCreatePosition(account: Address, isOpen: boolean, index: BigInt,
     order.createdTimestamp = blockTime.toI32()
 
     order.save()
+    let action = ""
+    if (isOpen) {
+        action = "Created open order"
+    } else {
+        action = "Created close order"
+    }
+    _storeActivity(account, action, null, order as MarketOrder, txHash, blockTime)
 }
 
-function _handleCancelOrder(account: Address, isOpen: boolean, index: BigInt, timestamp: BigInt): void {
+function _handleCancelOrder(account: Address, isOpen: boolean, index: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = Order.load(id)
 
@@ -129,9 +171,16 @@ function _handleCancelOrder(account: Address, isOpen: boolean, index: BigInt, ti
     order.cancelledTimestamp = timestamp.toI32()
 
     order.save()
+    let action = ""
+    if (isOpen) {
+        action = "Cancelled open order"
+    } else {
+        action = "Cancelled close order"
+    }
+    _storeActivity(account, action, order as Order, null, txHash, timestamp)
 }
 
-function _handleCancelPosition(account: Address, isOpen: boolean, index: BigInt, blockGap: BigInt, timeGap: BigInt): void {
+function _handleCancelPosition(account: Address, isOpen: boolean, index: BigInt, blockGap: BigInt, timeGap: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = MarketOrder.load(id)
 
@@ -140,6 +189,13 @@ function _handleCancelPosition(account: Address, isOpen: boolean, index: BigInt,
     order.cancelledTimeGap = timeGap.toI32()
 
     order.save()
+    let action = ""
+    if (isOpen) {
+        action = "Cancelled open order"
+    } else {
+        action = "Cancelled close order"
+    }
+    _storeActivity(account, action, null, order as MarketOrder, txHash, timestamp)
 }
 
 function _handleExecuteOrder(account: Address, isOpen: boolean, index: BigInt, timestamp: BigInt): void {
@@ -150,9 +206,10 @@ function _handleExecuteOrder(account: Address, isOpen: boolean, index: BigInt, t
     order.executedTimestamp = timestamp.toI32()
 
     order.save()
+    // _storeActivity(account, "Executed order", order, null, timestamp)
 }
 
-function _handleExecutePosition(account: Address, isOpen: boolean, index: BigInt,  blockGap: BigInt, timeGap: BigInt): void {
+function _handleExecutePosition(account: Address, isOpen: boolean, index: BigInt,  blockGap: BigInt, timeGap: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = MarketOrder.load(id)
 
@@ -161,10 +218,17 @@ function _handleExecutePosition(account: Address, isOpen: boolean, index: BigInt
     order.executedTimeGap = timeGap.toI32()
 
     order.save()
+    let action = ""
+    if (isOpen) {
+        action = "Executed open order"
+    } else {
+        action = "Executed close order"
+    }
+    _storeActivity(account, action, null, order as MarketOrder, txHash, timestamp)
 }
 
 function _handleUpdateOpenOrder(account: Address, type: string, index: BigInt, margin: BigInt, leverage: BigInt, size: BigInt, tradeFee: BigInt,
-                            triggerPrice: BigInt, triggerAboveThreshold: boolean, timestamp: BigInt): void {
+                            triggerPrice: BigInt, triggerAboveThreshold: boolean, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + "true" + "-" + index.toString()
     let order = Order.load(id)
 
@@ -178,10 +242,11 @@ function _handleUpdateOpenOrder(account: Address, type: string, index: BigInt, m
     order.createdTimestamp = timestamp.toI32()
 
     order.save()
+    _storeActivity(account, "Updated open order", order as Order, null, txHash, timestamp)
 }
 
 function _handleUpdateCloseOrder(account: Address, index: BigInt, size: BigInt,
-                                triggerPrice: BigInt, triggerAboveThreshold: boolean, timestamp: BigInt): void {
+                                triggerPrice: BigInt, triggerAboveThreshold: boolean, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + "false" + "-" + index.toString()
     let order = Order.load(id)
 
@@ -191,6 +256,7 @@ function _handleUpdateCloseOrder(account: Address, index: BigInt, size: BigInt,
     order.createdTimestamp = timestamp.toI32()
 
     order.save()
+    _storeActivity(account, "Updated close order", order as Order, null, txHash, timestamp)
 }
 
 
@@ -200,17 +266,16 @@ export function handleCreateOpenOrder(event: CreateOpenOrder): void {
         (!event.params.isLong && event.params.triggerAboveThreshold)) {
         type = "limit"
     } else {
-        type = "stopMarket"
+        type = "stop"
     }
     _handleCreateOrder(event.params.account, true, type, event.params.orderIndex, event.params.productId,
         event.params.margin, event.params.leverage, (event.params.margin).times(event.params.leverage).div(BASE),
-        event.params.tradeFee, event.params.isLong, event.params.triggerPrice, event.params.triggerAboveThreshold, event.params.executionFee, event.block.timestamp);
+        event.params.tradeFee, event.params.isLong, event.params.triggerPrice, event.params.triggerAboveThreshold, event.params.executionFee, event.transaction.hash.toHexString(), event.block.timestamp);
     _storeStats("createOpenTrigger", null)
-    _storeActivity(event.params.account, event.block.timestamp, "Request open request for " + type + " order" )
 }
 
 export function handleCancelOpenOrder(event: CancelOpenOrder): void {
-    _handleCancelOrder(event.params.account, true, event.params.orderIndex, event.block.timestamp);
+    _handleCancelOrder(event.params.account, true, event.params.orderIndex, event.transaction.hash.toHexString(), event.block.timestamp);
     _storeStats("cancelledOpenTrigger", "createOpenTrigger")
 }
 
@@ -225,11 +290,11 @@ export function handleUpdateOpenOrder(event: UpdateOpenOrder): void {
         (!event.params.isLong && event.params.triggerAboveThreshold)) {
         type = "limit"
     } else {
-        type = "stopMarket"
+        type = "stop"
     }
     _handleUpdateOpenOrder(event.params.account, type, event.params.orderIndex, event.params.margin, event.params.leverage,
         (event.params.margin).times(event.params.leverage).div(BASE), event.params.tradeFee, event.params.triggerPrice,
-        event.params.triggerAboveThreshold, event.params.orderTimestamp);
+        event.params.triggerAboveThreshold, event.transaction.hash.toHexString(), event.params.orderTimestamp);
 }
 
 export function handleCreateCloseOrder(event: CreateCloseOrder): void {
@@ -238,16 +303,20 @@ export function handleCreateCloseOrder(event: CreateCloseOrder): void {
         (!event.params.isLong && !event.params.triggerAboveThreshold)) {
         type = "limit"
     } else {
-        type = "stopMarket"
+        type = "stop"
     }
-    _handleCreateOrder(event.params.account, true, type, event.params.orderIndex, event.params.productId,
-        null, null, event.params.size, event.params.size.div(BigInt.fromI32(1000)), event.params.isLong, event.params.triggerPrice,
-        event.params.triggerAboveThreshold, event.params.executionFee, event.block.timestamp);
+    let perpContract = PikaPerpV3.bind(
+        Address.fromString(PERP_ADDRESS)
+    );
+    let position = perpContract.getPosition(event.params.account, event.params.productId, event.params.isLong);
+    _handleCreateOrder(event.params.account, false, type, event.params.orderIndex, event.params.productId,
+        position.value4, position.value1, event.params.size, event.params.size.div(BigInt.fromI32(1000)), event.params.isLong, event.params.triggerPrice,
+        event.params.triggerAboveThreshold, event.params.executionFee, event.transaction.hash.toHexString(), event.block.timestamp);
     _storeStats("createCloseTrigger", null)
 }
 
 export function handleCancelCloseOrder(event: CancelCloseOrder): void {
-    _handleCancelOrder(event.params.account, false, event.params.orderIndex, event.block.timestamp);
+    _handleCancelOrder(event.params.account, false, event.params.orderIndex, event.transaction.hash.toHexString(), event.block.timestamp);
     _storeStats("cancelledCloseTrigger", "createCloseTrigger")
 }
 
@@ -258,41 +327,44 @@ export function handleExecuteCloseOrder(event: ExecuteCloseOrder): void {
 
 export function handleUpdateCloseOrder(event: UpdateCloseOrder): void {
     _handleUpdateCloseOrder(event.params.account, event.params.orderIndex, event.params.size, event.params.triggerPrice,
-        event.params.triggerAboveThreshold, event.params.orderTimestamp);
+        event.params.triggerAboveThreshold, event.transaction.hash.toHexString(), event.params.orderTimestamp);
 }
 
 export function handleCreateOpenPosition(event: CreateOpenPosition): void {
     _handleCreatePosition(event.params.account, true, event.params.index, event.params.productId, event.params.margin,
         event.params.leverage, (event.params.margin).times(event.params.leverage).div(BASE), event.params.tradeFee, event.params.isLong,
-        event.params.acceptablePrice, event.params.executionFee, event.params.blockNumber, event.params.blockTime);
+        event.params.acceptablePrice, event.params.executionFee, event.params.blockNumber, event.transaction.hash.toHexString(), event.params.blockTime);
     _storeStats("createOpenMarket", null)
 }
 
 export function handleCancelOpenPosition(event: CancelOpenPosition): void {
-    _handleCancelPosition(event.params.account, true, event.params.index, event.params.blockGap, event.params.timeGap);
+    _handleCancelPosition(event.params.account, true, event.params.index, event.params.blockGap, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
     _storeStats("cancelledOpenMarket", "createOpenMarket")
 }
 
 export function handleExecuteOpenPosition(event: ExecuteOpenPosition): void {
-    _handleExecutePosition(event.params.account, true, event.params.index, event.params.blockGap, event.params.timeGap);
+    _handleExecutePosition(event.params.account, true, event.params.index, event.params.blockGap, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
     _storeStats("executedOpenMarket", "createOpenMarket")
 }
 
 export function handleCreateClosePosition(event: CreateClosePosition): void {
-    let id = event.params.account.toHexString() + "-" + "true" + "-" + event.params.index.toString()
-    let order = MarketOrder.load(id)
+    let perpContract = PikaPerpV3.bind(
+        Address.fromString(PERP_ADDRESS)
+    );
+    let position = perpContract.getPosition(event.params.account, event.params.productId, event.params.isLong);
+    // log.info('order: {}, {}', [order.leverage.toString(), order.tradeFee.toString()])
     _handleCreatePosition(event.params.account, false, event.params.index, event.params.productId, event.params.margin,
-        order.leverage, (event.params.margin).times(order.leverage).div(BASE), order.tradeFee, event.params.isLong, event.params.acceptablePrice,
-        event.params.executionFee, event.params.blockNumber, event.params.blockTime);
+        position.value1, (event.params.margin).times(position.value1).div(BASE), BigInt.fromI32(0), event.params.isLong, event.params.acceptablePrice,
+        event.params.executionFee, event.params.blockNumber, event.transaction.hash.toHexString(), event.params.blockTime);
     _storeStats("createCloseMarket", null)
 }
 
 export function handleCancelClosePosition(event: CancelClosePosition): void {
-    _handleCancelPosition(event.params.account, false, event.params.index, event.params.blockGap, event.params.timeGap);
+    _handleCancelPosition(event.params.account, false, event.params.index, event.params.blockGap, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
     _storeStats("cancelledCloseMarket", "createCloseMarket")
 }
 
 export function handleExecuteClosePosition(event: ExecuteClosePosition): void {
-    _handleExecutePosition(event.params.account, false, event.params.index, event.params.blockGap, event.params.timeGap);
+    _handleExecutePosition(event.params.account, false, event.params.index, event.params.blockGap, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
     _storeStats("executedCloseMarket", "createCloseMarket")
 }

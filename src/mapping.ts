@@ -1,6 +1,5 @@
 import { Address, BigInt, store, log, ethereum } from "@graphprotocol/graph-ts"
 import {
-  PikaPerpV2,
   AddMargin,
   ClosePosition,
   NewPosition,
@@ -14,12 +13,25 @@ import {
   ProtocolRewardDistributed,
   PikaRewardDistributed,
   VaultRewardDistributed,
-} from "../generated/PikaPerpV2Rinkeby/PikaPerpV2"
+} from "../generated/PikaPerpV3/PikaPerpV3"
 import {
   ClaimedReward,
   Reinvested
 } from "../generated/VaultFeeReward/VaultFeeReward"
-import { Vault, Product, Position, Transaction, Trade, VaultDayData, Stake, Liquidation, User } from "../generated/schema"
+import {
+  Vault,
+  Product,
+  Position,
+  Transaction,
+  Trade,
+  VaultDayData,
+  Stake,
+  Liquidation,
+  User,
+  Order,
+  MarketOrder,
+  Activity
+} from "../generated/schema"
 import { VaultFeeReward } from "../generated/VaultFeeReward/VaultFeeReward"
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 
@@ -93,6 +105,7 @@ export function handleNewPosition(event: NewPosition): void {
   position.owner = event.params.user
 
   position.isLong = event.params.isLong
+  position.funding = event.params.fundingRate
 
   position.createdAtTimestamp = event.block.timestamp
   position.createdAtBlockNumber = event.block.number
@@ -100,9 +113,9 @@ export function handleNewPosition(event: NewPosition): void {
   // Update liquidation price
   let liquidationPrice = ZERO_BI
   if (position.isLong) {
-    liquidationPrice = position.price.minus((position.price.times(product.liquidationThreshold).times(BigInt.fromI32(10000))).div(position.leverage))
+    liquidationPrice = position.price.minus((position.price.times(BigInt.fromI32(8000)).times(BigInt.fromI32(10000))).div(position.leverage))
   } else {
-    liquidationPrice = position.price.plus((position.price.times(product.liquidationThreshold).times(BigInt.fromI32(10000))).div(position.leverage))
+    liquidationPrice = position.price.plus((position.price.times(BigInt.fromI32(8000)).times(BigInt.fromI32(10000))).div(position.leverage))
   }
   position.liquidationPrice = liquidationPrice
 
@@ -179,12 +192,21 @@ export function handleAddMargin(event: AddMargin): void {
 
     let liquidationPrice = ZERO_BI
     if (position.isLong) {
-      liquidationPrice = position.price.minus((position.price.times(product.liquidationThreshold).times(BigInt.fromI32(10000))).div(position.leverage))
+      liquidationPrice = position.price.minus((position.price.times(BigInt.fromI32(8000)).times(BigInt.fromI32(10000))).div(position.leverage))
     } else {
-      liquidationPrice = position.price.plus((position.price.times(product.liquidationThreshold).times(BigInt.fromI32(10000))).div(position.leverage))
+      liquidationPrice = position.price.plus((position.price.times(BigInt.fromI32(8000)).times(BigInt.fromI32(10000))).div(position.leverage))
     }
 
     position.liquidationPrice = liquidationPrice
+
+    let activity = new Activity(position.owner.toHexString() + event.block.timestamp.toString() + "Added margin")
+    activity.account = event.params.user.toHexString()
+    activity.action = "Added margin"
+    activity.productId = position.productId
+    activity.margin = event.params.margin
+    activity.txHash = event.transaction.hash.toHexString()
+    activity.timestamp = event.block.timestamp
+    activity.save()
 
     position.save()
     vault.save()
@@ -236,8 +258,6 @@ export function handleClosePosition(event: ClosePosition): void {
     trade.leverage = event.params.leverage
     trade.amount = amount
 
-    let interestFee = amount.times(product.interest).div(FEE_BI).times(event.block.timestamp.minus(position.createdAtTimestamp)).div(YEAR_BI)
-
     trade.entryPrice = event.params.entryPrice
     trade.closePrice = event.params.price
 
@@ -250,12 +270,24 @@ export function handleClosePosition(event: ClosePosition): void {
     trade.wasLiquidated = event.params.wasLiquidated
     trade.isFullClose = event.params.margin == position.margin
 
+    let activity = new Activity(event.params.user.toHexString() + event.block.timestamp.toString() + "Liquidated")
     if (trade.wasLiquidated) {
       trade.tradeFee = tradeFee.times(ONE_BI)
+      activity.account = event.params.user.toHexString()
+      activity.action = "Liquidated"
+      activity.type = "market"
+      activity.productId = event.params.productId
+      activity.isLong = position.isLong
+      activity.margin = event.params.margin
+      activity.size = amount
+      activity.price = event.params.price
+      activity.txHash = event.transaction.hash.toHexString()
+      activity.timestamp = event.block.timestamp
+      activity.save()
     } else {
       trade.tradeFee = tradeFee.times(TWO_BI)
     }
-    trade.interestFee = interestFee
+    trade.fundingPayment = event.params.fundingPayment
 
     trade.isLong = position.isLong
 
@@ -359,7 +391,7 @@ export function handleProductAdded(event: ProductAdded): void {
     product.positionCount = ZERO_BI
     product.tradeCount = ZERO_BI
 
-    product.feed = event.params.product.feed
+    product.productToken = event.params.product.productToken
     product.maxLeverage = event.params.product.maxLeverage
     product.fee = BigInt.fromI32(event.params.product.fee)
 
@@ -368,11 +400,8 @@ export function handleProductAdded(event: ProductAdded): void {
     product.openInterestLong = ZERO_BI
     product.openInterestShort = ZERO_BI
 
-    product.interest = BigInt.fromI32(event.params.product.interest)
-    product.liquidationThreshold = BigInt.fromI32(event.params.product.liquidationThreshold)
-    product.liquidationBounty = BigInt.fromI32(event.params.product.liquidationBounty)
-    product.minPriceChange = BigInt.fromI32(event.params.product.minPriceChange)
-    product.weight = BigInt.fromI32(event.params.product.weight)
+    product.minPriceChange = event.params.product.minPriceChange
+    product.weight = event.params.product.weight
     product.reserve = event.params.product.reserve
 
     product.save()
@@ -390,16 +419,13 @@ export function handleProductUpdated(event: ProductUpdated): void {
     product.updatedAtTimestamp = event.block.timestamp
     product.updatedAtBlockNumber = event.block.number
 
-    product.feed = event.params.product.feed
+    product.productToken = event.params.product.productToken
     product.maxLeverage = event.params.product.maxLeverage
     product.fee = BigInt.fromI32(event.params.product.fee)
 
     product.isActive = event.params.product.isActive
 
-    product.interest = BigInt.fromI32(event.params.product.interest)
-    product.liquidationThreshold = BigInt.fromI32(event.params.product.liquidationThreshold)
-    product.liquidationBounty = BigInt.fromI32(event.params.product.liquidationBounty)
-    product.minPriceChange = BigInt.fromI32(event.params.product.minPriceChange)
+    product.minPriceChange = event.params.product.minPriceChange
     product.reserve = event.params.product.reserve
 
     product.save()
@@ -577,4 +603,6 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
 }
 
 export function handleOwnerUpdated(event: OwnerUpdated): void {}
+
+
 

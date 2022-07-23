@@ -374,21 +374,21 @@
     "anonymous":false,
     "inputs":[
       {
-        "indexed":false,
+        "indexed":true,
         "internalType":"address",
-        "name":"",
+        "name":"account",
         "type":"address"
       },
       {
         "indexed":false,
         "internalType":"uint256",
-        "name":"",
+        "name":"orderIndex",
         "type":"uint256"
       },
       {
         "indexed":false,
         "internalType":"string",
-        "name":"",
+        "name":"executionError",
         "type":"string"
       }
     ],
@@ -478,21 +478,21 @@
     "anonymous":false,
     "inputs":[
       {
-        "indexed":false,
+        "indexed":true,
         "internalType":"address",
-        "name":"",
+        "name":"account",
         "type":"address"
       },
       {
         "indexed":false,
         "internalType":"uint256",
-        "name":"",
+        "name":"orderIndex",
         "type":"uint256"
       },
       {
         "indexed":false,
         "internalType":"string",
-        "name":"",
+        "name":"executionError",
         "type":"string"
       }
     ],
@@ -605,11 +605,24 @@
       {
         "indexed":false,
         "internalType":"uint256",
-        "name":"minDelayBlock",
+        "name":"minTimeCancelDelay",
         "type":"uint256"
       }
     ],
-    "name":"UpdateMinTimeDelay",
+    "name":"UpdateMinTimeCancelDelay",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"minTimeExecuteDelay",
+        "type":"uint256"
+      }
+    ],
+    "name":"UpdateMinTimeExecuteDelay",
     "type":"event"
   },
   {
@@ -1051,6 +1064,51 @@
   },
   {
     "inputs":[
+      {
+        "internalType":"address[]",
+        "name":"tokens",
+        "type":"address[]"
+      },
+      {
+        "internalType":"uint256[]",
+        "name":"prices",
+        "type":"uint256[]"
+      },
+      {
+        "internalType":"address[]",
+        "name":"_openAddresses",
+        "type":"address[]"
+      },
+      {
+        "internalType":"uint256[]",
+        "name":"_openOrderIndexes",
+        "type":"uint256[]"
+      },
+      {
+        "internalType":"address[]",
+        "name":"_closeAddresses",
+        "type":"address[]"
+      },
+      {
+        "internalType":"uint256[]",
+        "name":"_closeOrderIndexes",
+        "type":"uint256[]"
+      },
+      {
+        "internalType":"address payable",
+        "name":"_feeReceiver",
+        "type":"address"
+      }
+    ],
+    "name":"executeOrdersWithPrices",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
 
     ],
     "name":"feeCalculator",
@@ -1230,7 +1288,22 @@
     "inputs":[
 
     ],
-    "name":"minTimeDelay",
+    "name":"minTimeCancelDelay",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"minTimeExecuteDelay",
     "outputs":[
       {
         "internalType":"uint256",
@@ -1443,11 +1516,26 @@
     "inputs":[
       {
         "internalType":"uint256",
-        "name":"_minTimeDelay",
+        "name":"_minTimeCancelDelay",
         "type":"uint256"
       }
     ],
-    "name":"setMinTimeDelay",
+    "name":"setMinTimeCancelDelay",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"uint256",
+        "name":"_minTimeExecuteDelay",
+        "type":"uint256"
+      }
+    ],
+    "name":"setMinTimeExecuteDelay",
     "outputs":[
 
     ],
@@ -1463,51 +1551,6 @@
       }
     ],
     "name":"setOracle",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"address[]",
-        "name":"tokens",
-        "type":"address[]"
-      },
-      {
-        "internalType":"uint256[]",
-        "name":"prices",
-        "type":"uint256[]"
-      },
-      {
-        "internalType":"address[]",
-        "name":"_openAddresses",
-        "type":"address[]"
-      },
-      {
-        "internalType":"uint256[]",
-        "name":"_openOrderIndexes",
-        "type":"uint256[]"
-      },
-      {
-        "internalType":"address[]",
-        "name":"_closeAddresses",
-        "type":"address[]"
-      },
-      {
-        "internalType":"uint256[]",
-        "name":"_closeOrderIndexes",
-        "type":"uint256[]"
-      },
-      {
-        "internalType":"address payable",
-        "name":"_feeReceiver",
-        "type":"address"
-      }
-    ],
-    "name":"setPricesAndExecuteOrders",
     "outputs":[
 
     ],

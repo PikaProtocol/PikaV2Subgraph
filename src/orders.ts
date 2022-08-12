@@ -40,7 +40,7 @@ import { PikaPerpV3 } from "../generated/PikaPerpV3/PikaPerpV3";
 import {UNIT_BI} from "./mapping";
 
 export const BASE = BigInt.fromI32(100000000)
-export const PERP_ADDRESS = "0x85c4fF09a013568264354b81283110aD3621e43b";
+export const PERP_ADDRESS = "0xD5A8f233CBdDb40368D55C3320644Fb36e597002";
 
 function _getId(account: Address, isOpen: boolean, index: BigInt): string {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
@@ -198,7 +198,7 @@ function _handleCancelPosition(account: Address, isOpen: boolean, index: BigInt,
     _storeActivity(account, action, null, order as MarketOrder, txHash, timestamp)
 }
 
-function _handleExecuteOrder(account: Address, isOpen: boolean, index: BigInt, timestamp: BigInt): void {
+function _handleExecuteOrder(account: Address, isOpen: boolean, index: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = Order.load(id)
 
@@ -206,7 +206,13 @@ function _handleExecuteOrder(account: Address, isOpen: boolean, index: BigInt, t
     order.executedTimestamp = timestamp.toI32()
 
     order.save()
-    // _storeActivity(account, "Executed order", order, null, timestamp)
+    let action = ""
+    if (isOpen) {
+        action = "Executed open order"
+    } else {
+        action = "Executed close order"
+    }
+    _storeActivity(account, action, order as Order, null, txHash, timestamp)
 }
 
 function _handleExecutePosition(account: Address, isOpen: boolean, index: BigInt,  blockGap: BigInt, timeGap: BigInt, txHash: String, timestamp: BigInt): void {
@@ -271,17 +277,17 @@ export function handleCreateOpenOrder(event: CreateOpenOrder): void {
     _handleCreateOrder(event.params.account, true, type, event.params.orderIndex, event.params.productId,
         event.params.margin, event.params.leverage, (event.params.margin).times(event.params.leverage).div(BASE),
         event.params.tradeFee, event.params.isLong, event.params.triggerPrice, event.params.triggerAboveThreshold, event.params.executionFee, event.transaction.hash.toHexString(), event.block.timestamp);
-    _storeStats("createOpenTrigger", null)
+    // _storeStats("createOpenTrigger", null)
 }
 
 export function handleCancelOpenOrder(event: CancelOpenOrder): void {
     _handleCancelOrder(event.params.account, true, event.params.orderIndex, event.transaction.hash.toHexString(), event.block.timestamp);
-    _storeStats("cancelledOpenTrigger", "createOpenTrigger")
+    // _storeStats("cancelledOpenTrigger", "createOpenTrigger")
 }
 
 export function handleExecuteOpenOrder(event: ExecuteOpenOrder): void {
-    _handleExecuteOrder(event.params.account, true, event.params.orderIndex, event.block.timestamp);
-    _storeStats("executedOpenTrigger", "createOpenTrigger")
+    _handleExecuteOrder(event.params.account, true, event.params.orderIndex, event.transaction.hash.toHexString(), event.block.timestamp);
+    // _storeStats("executedOpenTrigger", "createOpenTrigger")
 }
 
 export function handleUpdateOpenOrder(event: UpdateOpenOrder): void {
@@ -312,17 +318,17 @@ export function handleCreateCloseOrder(event: CreateCloseOrder): void {
     _handleCreateOrder(event.params.account, false, type, event.params.orderIndex, event.params.productId,
         position.value4, position.value1, event.params.size, event.params.size.div(BigInt.fromI32(1000)), event.params.isLong, event.params.triggerPrice,
         event.params.triggerAboveThreshold, event.params.executionFee, event.transaction.hash.toHexString(), event.block.timestamp);
-    _storeStats("createCloseTrigger", null)
+    // _storeStats("createCloseTrigger", null)
 }
 
 export function handleCancelCloseOrder(event: CancelCloseOrder): void {
     _handleCancelOrder(event.params.account, false, event.params.orderIndex, event.transaction.hash.toHexString(), event.block.timestamp);
-    _storeStats("cancelledCloseTrigger", "createCloseTrigger")
+    // _storeStats("cancelledCloseTrigger", "createCloseTrigger")
 }
 
 export function handleExecuteCloseOrder(event: ExecuteCloseOrder): void {
-    _handleExecuteOrder(event.params.account, false, event.params.orderIndex, event.block.timestamp);
-    _storeStats("executedCloseTrigger", "createCloseTrigger")
+    _handleExecuteOrder(event.params.account, false, event.params.orderIndex, event.transaction.hash.toHexString(), event.block.timestamp);
+    // _storeStats("executedCloseTrigger", "createCloseTrigger")
 }
 
 export function handleUpdateCloseOrder(event: UpdateCloseOrder): void {
@@ -334,17 +340,17 @@ export function handleCreateOpenPosition(event: CreateOpenPosition): void {
     _handleCreatePosition(event.params.account, true, event.params.index, event.params.productId, event.params.margin,
         event.params.leverage, (event.params.margin).times(event.params.leverage).div(BASE), event.params.tradeFee, event.params.isLong,
         event.params.acceptablePrice, event.params.executionFee, event.params.blockNumber, event.transaction.hash.toHexString(), event.params.blockTime);
-    _storeStats("createOpenMarket", null)
+    // _storeStats("createOpenMarket", null)
 }
 
 export function handleCancelOpenPosition(event: CancelOpenPosition): void {
     _handleCancelPosition(event.params.account, true, event.params.index, event.params.blockGap, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
-    _storeStats("cancelledOpenMarket", "createOpenMarket")
+    // _storeStats("cancelledOpenMarket", "createOpenMarket")
 }
 
 export function handleExecuteOpenPosition(event: ExecuteOpenPosition): void {
     _handleExecutePosition(event.params.account, true, event.params.index, event.params.blockGap, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
-    _storeStats("executedOpenMarket", "createOpenMarket")
+    // _storeStats("executedOpenMarket", "createOpenMarket")
 }
 
 export function handleCreateClosePosition(event: CreateClosePosition): void {
@@ -356,15 +362,15 @@ export function handleCreateClosePosition(event: CreateClosePosition): void {
     _handleCreatePosition(event.params.account, false, event.params.index, event.params.productId, event.params.margin,
         position.value1, (event.params.margin).times(position.value1).div(BASE), BigInt.fromI32(0), event.params.isLong, event.params.acceptablePrice,
         event.params.executionFee, event.params.blockNumber, event.transaction.hash.toHexString(), event.params.blockTime);
-    _storeStats("createCloseMarket", null)
+    // _storeStats("createCloseMarket", null)
 }
 
 export function handleCancelClosePosition(event: CancelClosePosition): void {
     _handleCancelPosition(event.params.account, false, event.params.index, event.params.blockGap, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
-    _storeStats("cancelledCloseMarket", "createCloseMarket")
+    // _storeStats("cancelledCloseMarket", "createCloseMarket")
 }
 
 export function handleExecuteClosePosition(event: ExecuteClosePosition): void {
     _handleExecutePosition(event.params.account, false, event.params.index, event.params.blockGap, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
-    _storeStats("executedCloseMarket", "createCloseMarket")
+    // _storeStats("executedCloseMarket", "createCloseMarket")
 }

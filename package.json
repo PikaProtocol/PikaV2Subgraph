@@ -13,6 +13,6 @@
     "@graphprotocol/graph-cli": "^0.21.0",
     "@graphprotocol/graph-ts": "0.20.0",
     "web3": "^1.7.3",
-    "web3-utils": "^1.7.3"
+    "web3-utils": "^1.7.4"
   }
 }

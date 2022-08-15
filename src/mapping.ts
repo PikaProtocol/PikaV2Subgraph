@@ -28,6 +28,9 @@ import {
   Stake,
   Liquidation,
   User,
+  QualifiedUser,
+  QualifiedTrader,
+  QualifiedLP,
   Order,
   MarketOrder,
   Activity
@@ -42,6 +45,10 @@ export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31536000)
+
+export const START_TIME = BigInt.fromI32(1660532996)
+export const END_TIME = BigInt.fromI32(1665569078)
+export const MIN_DEPOSIT = BigInt.fromString('10000000000')
 
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
@@ -95,6 +102,7 @@ export function handleNewPosition(event: NewPosition): void {
     singleAmount = amount.minus(position.amount)
   }
   transaction.singleAmount = singleAmount
+
   position.productId = event.params.productId
   position.leverage = event.params.leverage
   position.price = event.params.price
@@ -155,6 +163,23 @@ export function handleNewPosition(event: NewPosition): void {
     user.volume = user.volume.plus(singleAmount)
     user.fees = user.fees.plus(singleAmount.times(product.fee).div(FEE_BI))
   }
+  if (event.block.timestamp.ge(START_TIME) && event.block.timestamp.le(END_TIME)) {
+    let qualifiedTrader = QualifiedTrader.load(event.params.user.toHexString())
+    if (!qualifiedTrader) {
+      qualifiedTrader = new QualifiedTrader(event.params.user.toHexString())
+      qualifiedTrader.positionMargin = singleAmount
+      qualifiedTrader.save()
+    }
+
+    let qualifiedUser = QualifiedUser.load(event.params.user.toHexString())
+    let qualifiedLP = QualifiedLP.load(event.params.user.toHexString())
+    if (!qualifiedUser && qualifiedLP != null) {
+      qualifiedUser = new QualifiedUser(event.params.user.toHexString())
+      qualifiedUser.positionMargin = singleAmount
+      qualifiedUser.depositAmount = qualifiedLP.depositAmount
+      qualifiedUser.save()
+    }
+  }
 
   user.save()
   transaction.save()
@@ -206,8 +231,8 @@ export function handleAddMargin(event: AddMargin): void {
     activity.margin = event.params.margin
     activity.txHash = event.transaction.hash.toHexString()
     activity.timestamp = event.block.timestamp
-    activity.save()
 
+    activity.save()
     position.save()
     vault.save()
     vaultDayData.save()
@@ -476,19 +501,40 @@ export function handleStaked(event: Staked): void {
   vault.staked = vault.staked.plus(event.params.amount)
   vault.shares = vault.shares.plus(event.params.shares)
 
-  let stake = Stake.load(event.params.user.toHexString())
 
-  if (stake == null) {
-    // create stake
-    stake = new Stake(event.params.user.toHexString())
+  if (event.block.timestamp.ge(START_TIME) && event.block.timestamp.le(END_TIME)) {
+    let stake = Stake.load(event.params.user.toHexString())
+    if (stake == null) {
+      // create stake
+      stake = new Stake(event.params.user.toHexString())
 
-    stake.amount = event.params.amount
-    stake.shares = event.params.shares
-  } else {
-    stake.amount = stake.amount.plus(event.params.amount)
-    stake.shares = stake.shares.plus(event.params.shares)
+      stake.amount = event.params.amount
+      stake.shares = event.params.shares
+    } else {
+      stake.amount = stake.amount.plus(event.params.amount)
+      stake.shares = stake.shares.plus(event.params.shares)
+    }
+    stake.timestamp = event.block.timestamp
+    stake.save()
+
+    if (stake.amount.ge(MIN_DEPOSIT)) {
+      let qualifiedLP = QualifiedLP.load(event.params.user.toHexString())
+      if (!qualifiedLP) {
+        qualifiedLP = new QualifiedLP(event.params.user.toHexString())
+        qualifiedLP.depositAmount = stake.amount
+        qualifiedLP.save()
+      }
+
+      let qualifiedUser = QualifiedUser.load(event.params.user.toHexString())
+      let qualifiedTrader = QualifiedTrader.load(event.params.user.toHexString())
+      if (!qualifiedUser && qualifiedTrader != null) {
+        qualifiedUser = new QualifiedUser(event.params.user.toHexString())
+        qualifiedUser.depositAmount = stake.amount
+        qualifiedUser.positionMargin = qualifiedTrader.positionMargin
+        qualifiedUser.save()
+      }
+    }
   }
-  stake.timestamp = event.block.timestamp
 
   let user = User.load(event.params.user.toHexString())
   if (!user) {
@@ -505,7 +551,6 @@ export function handleStaked(event: Staked): void {
   user.netAmount = user.withdrawAmount.minus(user.depositAmount as BigInt)
   user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
 
-  stake.save()
   user.save()
   vault.save()
 
@@ -513,35 +558,35 @@ export function handleStaked(event: Staked): void {
 
 export function handleRedeemed(event: Redeemed): void {
 
-  let vault = Vault.load((1).toString())
-  vault.staked = vault.staked.minus(event.params.amount)
-  vault.shares = vault.shares.minus(event.params.shares)
-  vault.balance = vault.balance.minus(event.params.shareBalance)
-  vault.save()
-
-  let stake = Stake.load(event.params.user.toHexString())
-
-  if (event.params.isFullRedeem) {
-    store.remove('Stake', event.params.user.toHexString())
-  } else {
-    stake.amount = stake.amount.minus(event.params.amount)
-    stake.shares = stake.shares.minus(event.params.shares)
-    stake.save()
-  }
-
-  let user = User.load(event.params.user.toHexString())
-  user.shares = user.shares.minus(event.params.shares)
-  user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
-  user.netAmount = user.depositAmount ?
-      user.withdrawAmount.minus(user.depositAmount as BigInt) : ZERO_BI
-  // let vaultFeeRewardAddress = event.address.toHexString();
-  // let vaultFeeRewardContract = VaultFeeReward.bind(
-  //     Address.fromString("0x58488bB666d2da33F8E8938Dbdd582D2481D4183")
-  // );
-  // user.reward = user.reward ? vaultFeeRewardContract.getClaimableReward(event.params.user).plus(user.reward as BigInt) :
-  //     vaultFeeRewardContract.getClaimableReward(event.params.user)
-  user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
-  user.save()
+//   let vault = Vault.load((1).toString())
+//   vault.staked = vault.staked.minus(event.params.amount)
+//   vault.shares = vault.shares.minus(event.params.shares)
+//   vault.balance = vault.balance.minus(event.params.shareBalance)
+//   vault.save()
+//
+//   let stake = Stake.load(event.params.user.toHexString())
+//
+//   if (event.params.isFullRedeem) {
+//     store.remove('Stake', event.params.user.toHexString())
+//   } else {
+//     stake.amount = stake.amount.minus(event.params.amount)
+//     stake.shares = stake.shares.minus(event.params.shares)
+//     stake.save()
+//   }
+//
+//   let user = User.load(event.params.user.toHexString())
+//   user.shares = user.shares.minus(event.params.shares)
+//   user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
+//   user.netAmount = user.depositAmount ?
+//   user.withdrawAmount.minus(user.depositAmount as BigInt) : ZERO_BI
+//   // let vaultFeeRewardAddress = event.address.toHexString();
+//   // let vaultFeeRewardContract = VaultFeeReward.bind(
+//   //     Address.fromString("0x58488bB666d2da33F8E8938Dbdd582D2481D4183")
+//   // );
+//   // user.reward = user.reward ? vaultFeeRewardContract.getClaimableReward(event.params.user).plus(user.reward as BigInt) :
+//   //     vaultFeeRewardContract.getClaimableReward(event.params.user)
+//   user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
+//   user.save()
 }
 
 export function handleClaimedReward(event: ClaimedReward): void {

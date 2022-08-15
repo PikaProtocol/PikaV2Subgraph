@@ -1,13 +1,13 @@
 {
-  "name": "PikaPerpV3",
+  "name": "PikaOPCompaign",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --product hosted-service ethandev0/PikaPerpV3_Optimism",
-    "create-local": "graph create --node http://localhost:8020/ ethandev0/PikaPerpV3",
+    "deploy": "graph deploy --product hosted-service ethandev0/PikaOPCompaign",
+    "create-local": "graph create --node http://localhost:8020/ ethandev0/PikaOPCompaign",
     "remove-local": "graph remove --node http://localhost:8020/ PikaPerpV3",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ethandev0/PikaPerpV3"
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ethandev0/PikaOPCompaign"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.21.0",

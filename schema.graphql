@@ -137,6 +137,22 @@ type User @entity {
   pnl: BigInt
 }
 
+type QualifiedUser @entity {
+  id: ID! # user address
+  depositAmount: BigInt
+  positionMargin: BigInt
+}
+
+type QualifiedTrader @entity {
+  id: ID! # user address
+  positionMargin: BigInt
+}
+
+type QualifiedLP @entity {
+  id: ID! # user address
+  depositAmount: BigInt
+}
+
 type Trade @entity { # closed position
 
   id: ID! # unique: vault.tradeCount.toString()

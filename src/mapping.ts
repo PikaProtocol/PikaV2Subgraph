@@ -46,9 +46,9 @@ export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31536000)
 
-export const START_TIME = BigInt.fromI32(1660532996)
+export const START_TIME = BigInt.fromI32(1663693200)
 export const END_TIME = BigInt.fromI32(1665569078)
-export const MIN_DEPOSIT = BigInt.fromString('10000000000')
+export const MIN_DEPOSIT = BigInt.fromString('300000000')
 
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 

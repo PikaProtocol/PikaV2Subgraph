@@ -29,8 +29,7 @@ import {
   Liquidation,
   User,
   Order,
-  MarketOrder,
-  Activity
+  MarketOrder
 } from "../generated/schema"
 import { VaultFeeReward } from "../generated/VaultFeeReward/VaultFeeReward"
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
@@ -199,14 +198,14 @@ export function handleAddMargin(event: AddMargin): void {
 
     position.liquidationPrice = liquidationPrice
 
-    let activity = new Activity(position.owner.toHexString() + event.block.timestamp.toString() + "Added margin")
-    activity.account = event.params.user.toHexString()
-    activity.action = "Added margin"
-    activity.productId = position.productId
-    activity.margin = event.params.margin
-    activity.txHash = event.transaction.hash.toHexString()
-    activity.timestamp = event.block.timestamp
-    activity.save()
+    // let activity = new Activity(position.owner.toHexString() + event.block.timestamp.toString() + "Added margin")
+    // activity.account = event.params.user.toHexString()
+    // activity.action = "Added margin"
+    // activity.productId = position.productId
+    // activity.margin = event.params.margin
+    // activity.txHash = event.transaction.hash.toHexString()
+    // activity.timestamp = event.block.timestamp
+    // activity.save()
 
     position.save()
     vault.save()
@@ -270,20 +269,20 @@ export function handleClosePosition(event: ClosePosition): void {
     trade.wasLiquidated = event.params.wasLiquidated
     trade.isFullClose = event.params.margin == position.margin
 
-    let activity = new Activity(event.params.user.toHexString() + event.block.timestamp.toString() + "Liquidated")
+    // let activity = new Activity(event.params.user.toHexString() + event.block.timestamp.toString() + "Liquidated")
     if (trade.wasLiquidated) {
       trade.tradeFee = tradeFee.times(ONE_BI)
-      activity.account = event.params.user.toHexString()
-      activity.action = "Liquidated"
-      activity.type = "market"
-      activity.productId = event.params.productId
-      activity.isLong = position.isLong
-      activity.margin = event.params.margin
-      activity.size = amount
-      activity.price = event.params.price
-      activity.txHash = event.transaction.hash.toHexString()
-      activity.timestamp = event.block.timestamp
-      activity.save()
+      // activity.account = event.params.user.toHexString()
+      // activity.action = "Liquidated"
+      // activity.type = "market"
+      // activity.productId = event.params.productId
+      // activity.isLong = position.isLong
+      // activity.margin = event.params.margin
+      // activity.size = amount
+      // activity.price = event.params.price
+      // activity.txHash = event.transaction.hash.toHexString()
+      // activity.timestamp = event.block.timestamp
+      // activity.save()
     } else {
       trade.tradeFee = tradeFee.times(TWO_BI)
     }

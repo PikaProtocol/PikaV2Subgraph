@@ -521,9 +521,9 @@ export function handleRedeemed(event: Redeemed): void {
 
   let stake = Stake.load(event.params.user.toHexString())
 
-  if (event.params.isFullRedeem) {
+  if (stake != null && event.params.isFullRedeem) {
     store.remove('Stake', event.params.user.toHexString())
-  } else {
+  } else if (stake != null) {
     stake.amount = stake.amount.minus(event.params.amount)
     stake.shares = stake.shares.minus(event.params.shares)
     stake.save()

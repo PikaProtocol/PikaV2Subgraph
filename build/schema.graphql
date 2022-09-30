@@ -114,9 +114,6 @@ type Transaction @entity { # open or close
 
   tradeFee: BigInt!
 
-  pnl: BigInt
-  wasLiquidated: Boolean
-
   timestamp: BigInt!
   blockNumber: BigInt!
 

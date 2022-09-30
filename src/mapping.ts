@@ -245,6 +245,8 @@ export function handleClosePosition(event: ClosePosition): void {
     transaction.isLong = !position.isLong
     let tradeFee = amount.times(product.fee).div(FEE_BI)
     transaction.tradeFee = tradeFee
+    transaction.pnl = event.params.pnl
+    transaction.wasLiquidated = event.params.wasLiquidated
     transaction.timestamp = event.block.timestamp
     transaction.blockNumber = event.block.number
 

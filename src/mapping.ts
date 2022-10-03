@@ -42,6 +42,8 @@ export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31536000)
+export const START_TIME = BigInt.fromI32(1661990400)
+export const END_TIME = BigInt.fromI32(1664582400)
 
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
@@ -141,22 +143,25 @@ export function handleNewPosition(event: NewPosition): void {
   }
 
   // Update user
-  let user = User.load(event.params.user.toHexString())
-  if (!user) {
-    user = new User(event.params.user.toHexString())
-    vault.userCount = vault.userCount.plus(ONE_BI)
-    user.userNumber = vault.userCount
-    user.createdAtTimestamp = event.block.timestamp
-    user.tradeCount = ONE_BI
-    user.volume = singleAmount
-    user.fees = singleAmount.times(product.fee).div(FEE_BI)
-  } else {
-    user.tradeCount = user.tradeCount.plus(ONE_BI)
-    user.volume = user.volume.plus(singleAmount)
-    user.fees = user.fees.plus(singleAmount.times(product.fee).div(FEE_BI))
+  if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME) {
+    let user = User.load(event.params.user.toHexString())
+    if (!user) {
+      user = new User(event.params.user.toHexString())
+      vault.userCount = vault.userCount.plus(ONE_BI)
+      user.userNumber = vault.userCount
+      user.createdAtTimestamp = event.block.timestamp
+      user.tradeCount = ONE_BI
+      user.volume = singleAmount
+      user.fees = singleAmount.times(product.fee).div(FEE_BI)
+    } else {
+      user.tradeCount = user.tradeCount.plus(ONE_BI)
+      user.volume = user.volume.plus(singleAmount)
+      user.fees = user.fees.plus(singleAmount.times(product.fee).div(FEE_BI))
+    }
+
+    user.save()
   }
 
-  user.save()
   transaction.save()
   position.save()
   vault.save()
@@ -273,6 +278,7 @@ export function handleClosePosition(event: ClosePosition): void {
     let activity = new Activity(event.params.user.toHexString() + event.block.timestamp.toString() + "Liquidated")
     if (trade.wasLiquidated) {
       trade.tradeFee = tradeFee.times(ONE_BI)
+      transaction.tradeFee = ZERO_BI
       activity.account = event.params.user.toHexString()
       activity.action = "Liquidated"
       activity.type = "market"
@@ -346,23 +352,29 @@ export function handleClosePosition(event: ClosePosition): void {
       }
     }
 
-    // Update user
-    let user = User.load(event.params.user.toHexString())
-
-    // Update user data
-    user.tradeCount = user.tradeCount.plus(ONE_BI)
-    user.volume = user.volume.plus(amount)
-    if (!trade.wasLiquidated) {
-      user.fees = user.fees.plus(tradeFee)
+    if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME) {
+      // Update user
+      let user = User.load(event.params.user.toHexString())
+      if (!user) {
+        user = new User(event.params.user.toHexString())
+        vault.userCount = vault.userCount.plus(ONE_BI)
+        user.userNumber = vault.userCount
+        user.createdAtTimestamp = event.block.timestamp
+      }
+      // Update user data
+      user.tradeCount = user.tradeCount.plus(ONE_BI)
+      user.volume = user.volume.plus(amount)
+      if (!trade.wasLiquidated) {
+        user.fees = user.fees.plus(tradeFee)
+      }
+      if (trade.wasLiquidated && event.params.pnl.gt(ZERO_BI)) {
+        user.pnl = user.pnl.minus(event.params.pnl)
+      } else {
+        user.pnl = user.pnl.plus(event.params.pnl)
+      }
+      user.save()
     }
-    if (trade.wasLiquidated && event.params.pnl.gt(ZERO_BI)) {
-      user.pnl = user.pnl.minus(event.params.pnl)
-    } else {
-      user.pnl = user.pnl.plus(event.params.pnl)
-    }
 
-
-    user.save()
     transaction.save()
     trade.save()
     vault.save()

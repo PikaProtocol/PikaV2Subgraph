@@ -85,15 +85,21 @@ export function handleNewPosition(event: NewPosition): void {
   // Create position
   let position = Position.load(event.params.positionId.toString())
   let singleAmount = ZERO_BI
+  let singleMargin = ZERO_BI
   if (!position) {
     position = new Position(event.params.positionId.toString())
     singleAmount = amount
+    singleMargin = event.params.margin
+    transaction.price = event.params.price
   } else {
     singleAmount = amount.minus(position.amount)
+    singleMargin = event.params.margin.minus(position.margin)
+    transaction.price = (event.params.price.times(amount).minus(position.price.times(position.amount))).div(singleAmount)
   }
   let tradeFee = singleAmount.times(product.fee).div(FEE_BI)
   transaction.tradeFee = tradeFee
   transaction.singleAmount = singleAmount
+  transaction.singleMargin = singleMargin
   position.productId = event.params.productId
   position.leverage = event.params.leverage
   position.price = event.params.price
@@ -241,6 +247,7 @@ export function handleClosePosition(event: ClosePosition): void {
     let amount = event.params.margin.times(event.params.leverage).div(UNIT_BI)
     transaction.amount = amount
     transaction.singleAmount = amount
+    transaction.singleMargin = event.params.margin
     transaction.price = event.params.price
     transaction.isLong = !position.isLong
     let tradeFee = amount.times(product.fee).div(FEE_BI)
@@ -274,6 +281,7 @@ export function handleClosePosition(event: ClosePosition): void {
     // let activity = new Activity(event.params.user.toHexString() + event.block.timestamp.toString() + "Liquidated")
     if (trade.wasLiquidated) {
       trade.tradeFee = tradeFee.times(ONE_BI)
+      transaction.tradeFee = ZERO_BI
       // activity.account = event.params.user.toHexString()
       // activity.action = "Liquidated"
       // activity.type = "market"

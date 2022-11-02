@@ -183,6 +183,9 @@ function _handleCancelOrder(account: Address, isOpen: boolean, index: BigInt, tx
 function _handleCancelPosition(account: Address, isOpen: boolean, index: BigInt, blockGap: BigInt, timeGap: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = MarketOrder.load(id)
+    if (order == null) {
+        return
+    }
 
     order.status = "cancelled"
     order.cancelledBlockGap = blockGap.toI32()
@@ -218,7 +221,9 @@ function _handleExecuteOrder(account: Address, isOpen: boolean, index: BigInt, t
 function _handleExecutePosition(account: Address, isOpen: boolean, index: BigInt,  blockGap: BigInt, timeGap: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = MarketOrder.load(id)
-
+    if (order == null) {
+        return
+    }
     order.status = "executed"
     order.executedBlockGap = blockGap.toI32()
     order.executedTimeGap = timeGap.toI32()

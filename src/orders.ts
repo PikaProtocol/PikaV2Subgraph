@@ -183,6 +183,9 @@ function _handleCancelOrder(account: Address, isOpen: boolean, index: BigInt, tx
 function _handleCancelPosition(account: Address, isOpen: boolean, index: BigInt, blockGap: BigInt, timeGap: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = MarketOrder.load(id)
+    if (order == null) {
+        return
+    }
 
     order.status = "cancelled"
     order.cancelledBlockGap = blockGap.toI32()

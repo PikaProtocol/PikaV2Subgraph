@@ -103,6 +103,7 @@ type Transaction @entity { # open or close
 
   productId: BigInt!
   margin: BigInt!
+  singleMargin: BigInt!
   leverage: BigInt!
 
   amount: BigInt!
@@ -113,6 +114,9 @@ type Transaction @entity { # open or close
   isLong: Boolean!
 
   tradeFee: BigInt!
+
+  pnl: BigInt
+  wasLiquidated: Boolean
 
   timestamp: BigInt!
   blockNumber: BigInt!

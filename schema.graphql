@@ -139,6 +139,8 @@ type User @entity {
   volume: BigInt
   fees: BigInt
   pnl: BigInt
+
+  discount: BigInt
 }
 
 type Trade @entity { # closed position

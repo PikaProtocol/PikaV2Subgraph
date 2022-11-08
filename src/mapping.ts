@@ -19,6 +19,9 @@ import {
   Reinvested
 } from "../generated/VaultFeeReward/VaultFeeReward"
 import {
+  SetDiscountForAccount
+} from "../generated/FeeCalculator/FeeCalculator"
+import {
   Vault,
   Product,
   Position,
@@ -155,6 +158,7 @@ export function handleNewPosition(event: NewPosition): void {
     user.tradeCount = ONE_BI
     user.volume = singleAmount
     user.fees = singleAmount.times(product.fee).div(FEE_BI)
+    user.discount = ZERO_BI
   } else {
     user.tradeCount = user.tradeCount.plus(ONE_BI)
     user.volume = user.volume.plus(singleAmount)
@@ -507,6 +511,7 @@ export function handleStaked(event: Staked): void {
     user.createdAtTimestamp = event.block.timestamp
     user.depositAmount = event.params.amount
     user.shares = event.params.shares
+    user.discount = ZERO_BI
   } else {
     user.depositAmount = user.depositAmount.plus(event.params.amount)
     user.shares = user.shares.plus(event.params.shares)
@@ -610,6 +615,14 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
   vault.save()
   liquidation.save()
 }
+
+export function handleSetDiscountForAccount(event: SetDiscountForAccount): void {
+  let user = User.load(event.params.account.toHexString())
+  if (user) {
+    user.discount = event.params.discount
+  }
+}
+
 
 export function handleOwnerUpdated(event: OwnerUpdated): void {}
 

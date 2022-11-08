@@ -166,3 +166,25 @@ dataSources:
           handler: handleExecuteClosePosition
 
       file: ./src/orders.ts
+
+  - kind: ethereum/contract
+    name: FeeCalculator
+    network: optimism
+    source:
+      address: "0xF201CE7490cd14993b232258ad9DBC5dfF41FdbE"
+      abi: FeeCalculator
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - SetDiscountForAccount
+      abis:
+        - name: FeeCalculator
+          file: ./abis/FeeCalculator.json
+      eventHandlers:
+        - event: SetDiscountForAccount(indexed address,uint256)
+          handler: handleSetDiscountForAccount
+
+      file: ./src/mapping.ts

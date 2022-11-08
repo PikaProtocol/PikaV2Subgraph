@@ -171,7 +171,7 @@ dataSources:
     name: FeeCalculator
     network: optimism
     source:
-      address: "0xF201CE7490cd14993b232258ad9DBC5dfF41FdbE"
+      address: "0xbddfc30b212fAE5770C92B22194C35Cb6A8AD7Ba"
       abi: FeeCalculator
       startBlock: 0
     mapping:

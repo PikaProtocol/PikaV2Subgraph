@@ -132,6 +132,7 @@ export function handleNewPosition(event: NewPosition): void {
   vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
   vault.positionCount = vault.positionCount.plus(ONE_BI)
   vault.txCount = vault.txCount.plus(ONE_BI)
+  transaction.count = vault.txCount
 
   let vaultDayData = getVaultDayData(event)
   vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(amount)
@@ -242,6 +243,7 @@ export function handleClosePosition(event: ClosePosition): void {
 
     // create transaction
     let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "1")
+    transaction.count = vault.txCount;
     transaction.txHash = event.transaction.hash.toHexString()
     transaction.positionId = event.params.positionId
     transaction.owner = event.params.user
@@ -534,16 +536,20 @@ export function handleRedeemed(event: Redeemed): void {
   vault.save()
 
   let stake = Stake.load(event.params.user.toHexString())
-
-  if (event.params.isFullRedeem) {
-    store.remove('Stake', event.params.user.toHexString())
-  } else {
-    stake.amount = stake.amount.minus(event.params.amount)
-    stake.shares = stake.shares.minus(event.params.shares)
-    stake.save()
+  if (stake) {
+    if (event.params.isFullRedeem) {
+      store.remove('Stake', event.params.user.toHexString())
+    } else {
+      stake.amount = stake.amount.minus(event.params.amount)
+      stake.shares = stake.shares.minus(event.params.shares)
+      stake.save()
+    }
   }
 
   let user = User.load(event.params.user.toHexString())
+  if (!user) {
+    return
+  }
   user.shares = user.shares.minus(event.params.shares)
   user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
   user.netAmount = user.depositAmount ?
@@ -564,6 +570,9 @@ export function handleClaimedReward(event: ClaimedReward): void {
   // let vaultFeeRewardContract = VaultFeeReward.bind(
   //     Address.fromString(vaultFeeRewardAddress)
   // );
+  if (!user) {
+    return
+  }
   user.reward = user.reward ? (event.params.amount.times(HUNDRED_BI)).plus(user.reward as BigInt) : event.params.amount.times(HUNDRED_BI)
   user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
   user.save()
@@ -575,6 +584,9 @@ export function handleReinvested(event: Reinvested): void {
   // let vaultFeeRewardContract = VaultFeeReward.bind(
   //     Address.fromString(vaultFeeRewardAddress)
   // );
+  if (!user) {
+    return
+  }
   user.reward = user.reward ? (event.params.amount.times(HUNDRED_BI)).plus(user.reward as BigInt) : event.params.amount.times(HUNDRED_BI)
   user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
   user.save()
@@ -621,6 +633,7 @@ export function handleSetDiscountForAccount(event: SetDiscountForAccount): void 
   if (user) {
     user.discount = event.params.discount
   }
+  user.save()
 }
 
 

@@ -166,7 +166,9 @@ function _handleCreatePosition(account: Address, isOpen: boolean, index: BigInt,
 function _handleCancelOrder(account: Address, isOpen: boolean, index: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = Order.load(id)
-
+    if (!order) {
+        return
+    }
     order.status = "cancelled"
     order.cancelledTimestamp = timestamp.toI32()
 
@@ -204,7 +206,9 @@ function _handleCancelPosition(account: Address, isOpen: boolean, index: BigInt,
 function _handleExecuteOrder(account: Address, isOpen: boolean, index: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = Order.load(id)
-
+    if (!order) {
+        return
+    }
     order.status = "executed"
     order.executedTimestamp = timestamp.toI32()
 
@@ -221,7 +225,9 @@ function _handleExecuteOrder(account: Address, isOpen: boolean, index: BigInt, t
 function _handleExecutePosition(account: Address, isOpen: boolean, index: BigInt,  blockGap: BigInt, timeGap: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = MarketOrder.load(id)
-
+    if (!order) {
+        return
+    }
     order.status = "executed"
     order.executedBlockGap = blockGap.toI32()
     order.executedTimeGap = timeGap.toI32()
@@ -240,7 +246,9 @@ function _handleUpdateOpenOrder(account: Address, type: string, index: BigInt, m
                             triggerPrice: BigInt, triggerAboveThreshold: boolean, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + "true" + "-" + index.toString()
     let order = Order.load(id)
-
+    if (!order) {
+        return
+    }
     order.type = type
     order.margin = margin
     order.leverage = leverage
@@ -258,7 +266,9 @@ function _handleUpdateCloseOrder(account: Address, index: BigInt, size: BigInt,
                                 triggerPrice: BigInt, triggerAboveThreshold: boolean, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + "false" + "-" + index.toString()
     let order = Order.load(id)
-
+    if (!order) {
+        return
+    }
     order.size = size
     order.triggerPrice = triggerPrice
     order.triggerAboveThreshold = triggerAboveThreshold

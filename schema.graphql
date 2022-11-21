@@ -120,6 +120,7 @@ type Transaction @entity { # open or close
 
   timestamp: BigInt!
   blockNumber: BigInt!
+  count: BigInt
 
 }
 

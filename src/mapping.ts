@@ -134,9 +134,11 @@ export function handleNewPosition(event: NewPosition): void {
   vault.txCount = vault.txCount.plus(ONE_BI)
 
   let vaultDayData = getVaultDayData(event)
-  vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(amount)
-  vaultDayData.cumulativeMargin = vaultDayData.cumulativeMargin.plus(event.params.margin)
+  vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(singleAmount)
+  vaultDayData.cumulativeMargin = vaultDayData.cumulativeMargin.plus(singleMargin)
+  vaultDayData.cumulativeFee = vaultDayData.cumulativeVolume.plus(tradeFee)
   vaultDayData.positionCount = vaultDayData.positionCount.plus(ONE_BI)
+  vaultDayData.txCount = vaultDayData.txCount.plus(ONE_BI)
 
   product.cumulativeVolume = product.cumulativeVolume.plus(amount)
   product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)
@@ -341,7 +343,9 @@ export function handleClosePosition(event: ClosePosition): void {
 
     vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(amount)
     vaultDayData.cumulativeMargin = vaultDayData.cumulativeMargin.plus(event.params.margin)
+    vaultDayData.cumulativeFee = vaultDayData.cumulativeFee.plus(transaction.tradeFee)
     vaultDayData.tradeCount = vaultDayData.tradeCount.plus(ONE_BI)
+    vaultDayData.txCount = vaultDayData.txCount.plus(ONE_BI)
 
     product.cumulativeVolume = product.cumulativeVolume.plus(amount)
     product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)

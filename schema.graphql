@@ -207,6 +207,7 @@ type VaultDayData @entity {
 
   positionCount: BigInt
   tradeCount: BigInt
+  txCount: BigInt
 }
 
 type Stake @entity {

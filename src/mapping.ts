@@ -136,7 +136,7 @@ export function handleNewPosition(event: NewPosition): void {
   let vaultDayData = getVaultDayData(event)
   vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(singleAmount)
   vaultDayData.cumulativeMargin = vaultDayData.cumulativeMargin.plus(singleMargin)
-  vaultDayData.cumulativeFee = vaultDayData.cumulativeVolume.plus(tradeFee)
+  vaultDayData.cumulativeFee = vaultDayData.cumulativeFee.plus(tradeFee)
   vaultDayData.positionCount = vaultDayData.positionCount.plus(ONE_BI)
   vaultDayData.txCount = vaultDayData.txCount.plus(ONE_BI)
 
@@ -623,8 +623,13 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
   liquidation.blockNumber = event.block.number
   vault.liquidationCount = vault.liquidationCount.plus(ONE_BI)
 
+  let vaultDayData = getVaultDayData(event)
+  vaultDayData.liquidatorReward = vaultDayData.liquidatorReward + event.params.liquidatorReward
+  vaultDayData.remainingReward = vaultDayData.remainingReward + event.params.remainingReward
+
   vault.save()
   liquidation.save()
+  vaultDayData.save()
 }
 
 export function handleOwnerUpdated(event: OwnerUpdated): void {}

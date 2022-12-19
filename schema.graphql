@@ -208,6 +208,8 @@ type VaultDayData @entity {
   positionCount: BigInt
   tradeCount: BigInt
   txCount: BigInt
+  liquidatorReward: BigInt
+  remainingReward: BigInt
 }
 
 type Stake @entity {

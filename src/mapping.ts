@@ -555,6 +555,9 @@ export function handleRedeemed(event: Redeemed): void {
   }
 
   let user = User.load(event.params.user.toHexString())
+  if (!user) {
+    return
+  }
   user.shares = user.shares.minus(event.params.shares)
   user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
   user.netAmount = user.depositAmount ?

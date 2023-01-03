@@ -42,8 +42,8 @@ export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31536000)
-export const START_TIME = BigInt.fromI32(1667260800)
-export const END_TIME = BigInt.fromI32(1669852800)
+export const START_TIME = BigInt.fromI32(1669852800)
+export const END_TIME = BigInt.fromI32(1672531200)
 
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
@@ -132,6 +132,7 @@ export function handleNewPosition(event: NewPosition): void {
   vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
   vault.positionCount = vault.positionCount.plus(ONE_BI)
   vault.txCount = vault.txCount.plus(ONE_BI)
+  transaction.count = vault.txCount
 
   let vaultDayData = getVaultDayData(event)
   vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(singleAmount)
@@ -246,6 +247,7 @@ export function handleClosePosition(event: ClosePosition): void {
 
     // create transaction
     let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "1")
+    transaction.count = vault.txCount
     transaction.txHash = event.transaction.hash.toHexString()
     transaction.positionId = event.params.positionId
     transaction.owner = event.params.user

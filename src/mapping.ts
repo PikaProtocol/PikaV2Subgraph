@@ -42,8 +42,8 @@ export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31536000)
-export const START_TIME = BigInt.fromI32(1669852800)
-export const END_TIME = BigInt.fromI32(1672531200)
+export const START_TIME = BigInt.fromI32(1672531200)
+export const END_TIME = BigInt.fromI32(1675209600)
 
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
@@ -99,7 +99,7 @@ export function handleNewPosition(event: NewPosition): void {
     singleMargin = event.params.margin.minus(position.margin)
     transaction.price = (event.params.price.times(amount).minus(position.price.times(position.amount))).div(singleAmount)
   }
-  let tradeFee = singleAmount.times(product.fee).div(FEE_BI)
+  let tradeFee = event.params.fee
   transaction.tradeFee = tradeFee
   transaction.singleAmount = singleAmount
   transaction.singleMargin = singleMargin
@@ -260,7 +260,7 @@ export function handleClosePosition(event: ClosePosition): void {
     transaction.singleMargin = event.params.margin
     transaction.price = event.params.price
     transaction.isLong = !position.isLong
-    let tradeFee = amount.times(product.fee).div(FEE_BI)
+    let tradeFee = event.params.fee
     transaction.tradeFee = tradeFee
     transaction.pnl = event.params.pnl
     transaction.wasLiquidated = event.params.wasLiquidated

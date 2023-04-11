@@ -1,0 +1,56 @@
+specVersion: 0.0.2
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: PikaPerpV2Optimism
+    network: optimism
+    source:
+      address: "0x365324E5045df8c886EBe6AD5449F5CeB5881A40"
+      abi: PikaPerpV2
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      entities:
+        - AddMargin
+        - ClosePosition
+        - NewPosition
+        - OwnerUpdated
+        - PositionLiquidated
+        - ProductAdded
+        - ProductUpdated
+        - ProtocolFeeUpdated
+        - Redeemed
+        - Staked
+        - VaultUpdated
+      abis:
+        - name: PikaPerpV2
+          file: PikaPerpV2Optimism/abis/PikaPerpV2.json
+      eventHandlers:
+        - event: AddMargin(indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handleAddMargin
+        - event: ClosePosition(uint256,indexed address,indexed uint256,indexed
+            bool,uint256,uint256,uint256,uint256,uint256,bool,bool)
+          handler: handleClosePosition
+        - event: NewPosition(indexed uint256,indexed address,indexed
+            uint256,bool,uint256,uint256,uint256,uint256)
+          handler: handleNewPosition
+        - event: OwnerUpdated(address)
+          handler: handleOwnerUpdated
+        - event: PositionLiquidated(indexed uint256,indexed address,uint256,uint256,uint256)
+          handler: handlePositionLiquidated
+        - event: ProductAdded(uint256,(address,uint72,uint16,bool,uint64,uint64,uint64,uint16,uint16,uint16,uint16,uint64))
+          handler: handleProductAdded
+        - event: ProductUpdated(uint256,(address,uint72,uint16,bool,uint64,uint64,uint64,uint16,uint16,uint16,uint16,uint64))
+          handler: handleProductUpdated
+        - event: ProtocolFeeUpdated(uint256)
+          handler: handleProtocolFeeUpdated
+        - event: Redeemed(uint256,indexed address,uint256,uint256,uint256,bool)
+          handler: handleRedeemed
+        - event: Staked(uint256,indexed address,uint256,uint256)
+          handler: handleStaked
+        - event: VaultUpdated((uint96,uint96,uint64,uint64,uint80,uint80,uint32,uint32,uint32))
+          handler: handleVaultUpdated
+      file: PikaPerpV2Optimism/PikaPerpV2Optimism.wasm

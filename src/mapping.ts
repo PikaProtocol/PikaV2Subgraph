@@ -12,8 +12,8 @@ import {
   Redeemed,
   Staked,
   VaultUpdated
-} from "../generated/PikaPerpV2/PikaPerpV2"
-import { Vault, Product, Position, Transaction, Trade, VaultDayData, Stake } from "../generated/schema"
+} from "../generated/PikaPerpV2Optimism/PikaPerpV2"
+import { Vault, Product, Position, Transaction, Trade, VaultDayData, Stake, User } from "../generated/schema"
 
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 
@@ -23,6 +23,7 @@ export const TWO_BI = BigInt.fromI32(2)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31104000)
+export const THIRTY_DAYS = BigInt.fromI32(2592000)
 
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
@@ -415,7 +416,24 @@ export function handleStaked(event: Staked): void {
   stake.shares = event.params.shares
   stake.timestamp = event.block.timestamp
 
+  let user = User.load(event.params.user.toHexString())
+  if (!user) {
+    user = new User(event.params.user.toHexString())
+    vault.userCount = vault.userCount.plus(ONE_BI)
+    user.userNumber = vault.userCount
+    user.createdAtTimestamp = event.block.timestamp
+    user.depositAmount = event.params.amount
+    user.shares = event.params.shares
+    user.aveDepositTimestamp = event.block.timestamp
+  } else {
+    user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp as BigInt).plus
+    (event.params.shares.times(event.block.timestamp))).div(user.shares.plus(event.params.shares))
+    user.depositAmount = user.depositAmount.plus(event.params.amount)
+    user.shares = user.shares.plus(event.params.shares)
+  }
+
   stake.save()
+  user.save()
 
 }
 
@@ -436,6 +454,15 @@ export function handleRedeemed(event: Redeemed): void {
     stake.shares = stake.shares.minus(event.params.shares)
     stake.save()
   }
+
+  let user = User.load(event.params.user.toHexString())
+  if (!user) {
+    return
+  }
+  user.shares = user.shares.minus(event.params.shares)
+  user.aveStakedShares = user.aveStakedShares.plus(user.aveDepositTimestamp.times(event.params.shares).div(THIRTY_DAYS))
+  user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
+  user.save()
 
 }
 

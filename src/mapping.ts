@@ -30,6 +30,7 @@ export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31536000)
+export const THIRTY_DAYS = BigInt.fromI32(2592000)
 
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
@@ -472,7 +473,10 @@ export function handleStaked(event: Staked): void {
     user.createdAtTimestamp = event.block.timestamp
     user.depositAmount = event.params.amount
     user.shares = event.params.shares
+    user.aveDepositTimestamp = event.block.timestamp
   } else {
+    user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp as BigInt).plus
+    (event.params.shares.times(event.block.timestamp))).div(user.shares.plus(event.params.shares))
     user.depositAmount = user.depositAmount.plus(event.params.amount)
     user.shares = user.shares.plus(event.params.shares)
   }
@@ -505,9 +509,11 @@ export function handleRedeemed(event: Redeemed): void {
 
   let user = User.load(event.params.user.toHexString())
   user.shares = user.shares.minus(event.params.shares)
+  user.aveStakedShares = user.aveStakedShares.plus(user.aveDepositTimestamp.times(event.params.shares).div(THIRTY_DAYS))
   user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
   user.netAmount = user.depositAmount ?
       user.withdrawAmount.minus(user.depositAmount as BigInt) : ZERO_BI
+
   // let vaultFeeRewardAddress = event.address.toHexString();
   // let vaultFeeRewardContract = VaultFeeReward.bind(
   //     Address.fromString("0x58488bB666d2da33F8E8938Dbdd582D2481D4183")
@@ -520,6 +526,9 @@ export function handleRedeemed(event: Redeemed): void {
 
 export function handleClaimedReward(event: ClaimedReward): void {
   let user = User.load(event.params.user.toHexString())
+  if (!user) {
+    return
+  }
   // let vaultFeeRewardAddress = event.address.toHexString();
   // let vaultFeeRewardContract = VaultFeeReward.bind(
   //     Address.fromString(vaultFeeRewardAddress)
@@ -531,6 +540,9 @@ export function handleClaimedReward(event: ClaimedReward): void {
 
 export function handleReinvested(event: Reinvested): void {
   let user = User.load(event.params.user.toHexString())
+  if (!user) {
+    return
+  }
   // let vaultFeeRewardAddress = event.address.toHexString();
   // let vaultFeeRewardContract = VaultFeeReward.bind(
   //     Address.fromString(vaultFeeRewardAddress)

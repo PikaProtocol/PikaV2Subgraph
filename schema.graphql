@@ -125,8 +125,10 @@ type User @entity {
   id: ID! # user address
   userNumber: BigInt
   createdAtTimestamp: BigInt
+  aveDepositTimestamp: BigInt
   depositAmount: BigInt
   withdrawAmount: BigInt
+  aveStakedShares: BigInt
   shares: BigInt
   reward: BigInt
   remainingAmount: BigInt

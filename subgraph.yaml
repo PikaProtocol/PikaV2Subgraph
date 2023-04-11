@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "0xD5A8f233CBdDb40368D55C3320644Fb36e597002"
       abi: PikaPerpV3
-      startBlock: 0
+      startBlock: 88853951
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4

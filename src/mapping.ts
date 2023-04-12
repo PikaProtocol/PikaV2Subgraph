@@ -42,8 +42,8 @@ export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31536000)
-export const START_TIME = BigInt.fromI32(0)
-export const END_TIME = BigInt.fromI32(1680307200)
+export const START_TIME = BigInt.fromI32(1681084800)
+export const END_TIME = BigInt.fromI32(1683072000)
 export const THIRTY_DAYS = BigInt.fromI32(2592000)
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
@@ -94,6 +94,7 @@ export function handleNewPosition(event: NewPosition): void {
     singleAmount = amount
     singleMargin = event.params.margin
     transaction.price = event.params.price
+    position.createdAtTimestamp = event.block.timestamp
   } else {
     singleAmount = amount.minus(position.amount)
     singleMargin = event.params.margin.minus(position.margin)
@@ -115,7 +116,7 @@ export function handleNewPosition(event: NewPosition): void {
   position.isLong = event.params.isLong
   position.funding = event.params.fundingRate
 
-  position.createdAtTimestamp = event.block.timestamp
+  // position.createdAtTimestamp = event.block.timestamp
   position.createdAtBlockNumber = event.block.number
 
   // Update liquidation price
@@ -388,7 +389,9 @@ export function handleClosePosition(event: ClosePosition): void {
     }
 
     transaction.save()
-    trade.save()
+    if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME && position.createdAtTimestamp >= START_TIME) {
+      trade.save()
+    }
     vault.save()
     vaultDayData.save()
     product.save()

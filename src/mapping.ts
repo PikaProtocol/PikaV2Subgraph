@@ -382,11 +382,8 @@ export function handleClosePosition(event: ClosePosition): void {
       if (!trade.wasLiquidated) {
         user.fees = user.fees.plus(tradeFee)
       }
-      if (trade.wasLiquidated && event.params.pnl.gt(ZERO_BI)) {
-        user.pnl = user.pnl.minus(event.params.pnl)
-      } else {
-        user.pnl = user.pnl.plus(event.params.pnl)
-      }
+
+      user.pnl = user.pnl.plus(event.params.pnl)
       user.save()
     }
 

@@ -525,10 +525,7 @@ export function handleStaked(event: Staked): void {
     user.createdAtTimestamp = event.block.timestamp
     user.depositAmount = event.params.amount
     user.shares = event.params.shares
-    user.aveDepositTimestamp = event.block.timestamp
   } else {
-    user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp as BigInt).plus
-    (event.params.shares.times(event.block.timestamp))).div(user.shares.plus(event.params.shares))
     user.depositAmount = user.depositAmount.plus(event.params.amount)
     user.shares = user.shares.plus(event.params.shares)
   }
@@ -564,7 +561,6 @@ export function handleRedeemed(event: Redeemed): void {
     return
   }
   user.shares = user.shares.minus(event.params.shares)
-  user.aveStakedShares = user.aveStakedShares.plus((event.block.timestamp.minus(user.aveDepositTimestamp as BigInt)).times(event.params.shares).div(THIRTY_DAYS))
   user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
   user.netAmount = user.depositAmount ?
       user.withdrawAmount.minus(user.depositAmount as BigInt) : ZERO_BI

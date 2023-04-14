@@ -434,6 +434,7 @@ export function handleStaked(event: Staked): void {
 
   stake.save()
   user.save()
+  vault.save()
 
 }
 

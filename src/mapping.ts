@@ -162,6 +162,7 @@ export function handleNewPosition(event: NewPosition): void {
       user.tradeCount = ONE_BI
       user.volume = singleAmount
       user.fees = singleAmount.times(product.fee).div(FEE_BI)
+      user.aveStakedShares = ZERO_BI
     } else {
       user.tradeCount = user.tradeCount.plus(ONE_BI)
       user.volume = user.volume.plus(singleAmount)
@@ -375,6 +376,7 @@ export function handleClosePosition(event: ClosePosition): void {
         vault.userCount = vault.userCount.plus(ONE_BI)
         user.userNumber = vault.userCount
         user.createdAtTimestamp = event.block.timestamp
+        user.aveStakedShares = ZERO_BI
       }
       // Update user data
       user.tradeCount = user.tradeCount.plus(ONE_BI)
@@ -522,10 +524,15 @@ export function handleStaked(event: Staked): void {
     user.createdAtTimestamp = event.block.timestamp
     user.depositAmount = event.params.amount
     user.shares = event.params.shares
+    user.aveStakedShares = ZERO_BI
     user.aveDepositTimestamp = event.block.timestamp
   } else {
+    log.error("times before {}{}", [user.aveDepositTimestamp.toString()])
+    log.error("plus {}", [(user.shares.times(user.aveDepositTimestamp as BigInt).plus
+    (event.params.shares.times(event.block.timestamp))).toString()])
     user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp as BigInt).plus
     (event.params.shares.times(event.block.timestamp))).div(user.shares.plus(event.params.shares))
+    log.error("aveDepositTimestamp after {}", [user.aveDepositTimestamp.toString()])
     user.depositAmount = user.depositAmount.plus(event.params.amount)
     user.shares = user.shares.plus(event.params.shares)
   }
@@ -561,7 +568,9 @@ export function handleRedeemed(event: Redeemed): void {
     return
   }
   user.shares = user.shares.minus(event.params.shares)
+  log.error("user.aveStakedShares before {}", [user.aveStakedShares.toString()])
   user.aveStakedShares = user.aveStakedShares.plus((event.block.timestamp.minus(user.aveDepositTimestamp as BigInt)).times(event.params.shares).div(THIRTY_DAYS))
+  log.error("user.aveStakedShares after {}", [user.aveStakedShares.toString()])
   user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
   user.netAmount = user.depositAmount ?
       user.withdrawAmount.minus(user.depositAmount as BigInt) : ZERO_BI

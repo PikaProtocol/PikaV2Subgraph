@@ -524,10 +524,14 @@ export function handleStaked(event: Staked): void {
     user.shares = event.params.shares
     user.aveDepositTimestamp = event.block.timestamp
   } else {
-    user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp as BigInt).plus
-    (event.params.shares.times(event.block.timestamp))).div(user.shares.plus(event.params.shares))
-    user.depositAmount = user.depositAmount.plus(event.params.amount)
-    user.shares = user.shares.plus(event.params.shares)
+    if (user.shares.plus(event.params.shares).equals(ZERO_BI)) {
+      user.aveDepositTimestamp = BigInt.fromI32(0)
+    } else {
+      user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp as BigInt).plus
+      (event.params.shares.times(event.block.timestamp))).div(user.shares.plus(event.params.shares))
+      user.depositAmount = user.depositAmount.plus(event.params.amount)
+      user.shares = user.shares.plus(event.params.shares)
+    }
   }
   user.netAmount = user.withdrawAmount.minus(user.depositAmount as BigInt)
   user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount

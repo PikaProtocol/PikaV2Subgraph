@@ -71,8 +71,10 @@ export function handleNewPosition(event: NewPosition): void {
 
   let vault = Vault.load((1).toString())
 
-  let product = Product.load((event.params.productId).toString())
+  if (!vault) return
 
+  let product = Product.load((event.params.productId).toString())
+  if (!product) return
   // create transaction
   let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "0")
   transaction.txHash = event.transaction.hash.toHexString()
@@ -209,12 +211,14 @@ export function handleAddMargin(event: AddMargin): void {
     // volume updates
 
     let vault = Vault.load((1).toString())
+    if (!vault) return
     vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
 
     let vaultDayData = getVaultDayData(event)
     vaultDayData.cumulativeMargin = vaultDayData.cumulativeMargin.plus(event.params.margin)
 
     let product = Product.load((position.productId).toString())
+    if (!product) return
     product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)
 
     // Update liquidation price
@@ -257,9 +261,10 @@ export function handleClosePosition(event: ClosePosition): void {
   if (position) {
 
     let vault = Vault.load((1).toString())
+    if (!vault) return
     let vaultDayData = getVaultDayData(event)
     let product = Product.load((event.params.productId).toString())
-
+    if (!product) return
     vault.tradeCount = vault.tradeCount.plus(ONE_BI)
     vault.txCount = vault.txCount.plus(ONE_BI)
 
@@ -518,6 +523,7 @@ export function handleStaked(event: Staked): void {
     return
   }
   let vault = Vault.load((1).toString())
+  if (!vault) return
   vault.balance = vault.balance.plus(event.params.amount)
   vault.staked = vault.staked.plus(event.params.amount)
   vault.shares = vault.shares.plus(event.params.shares)
@@ -562,6 +568,7 @@ export function handleRedeemed(event: Redeemed): void {
     return
   }
   let vault = Vault.load((1).toString())
+  if (!vault) return
   vault.staked = vault.staked.minus(event.params.amount)
   vault.shares = vault.shares.minus(event.params.shares)
   vault.balance = vault.balance.minus(event.params.shareBalance)
@@ -634,6 +641,7 @@ export function handleProtocolRewardDistributed(event: ProtocolRewardDistributed
     return
   }
   let vault = Vault.load((1).toString())
+  if (!vault) return
   vault.protocolReward = vault.protocolReward.plus(event.params.amount)
   vault.save()
 }
@@ -643,6 +651,7 @@ export function handlePikaRewardDistributed(event: PikaRewardDistributed): void 
     return
   }
   let vault = Vault.load((1).toString())
+  if (!vault) return
   vault.pikaReward = vault.pikaReward.plus(event.params.amount)
   vault.save()
 }
@@ -652,6 +661,7 @@ export function handleVaultRewardDistributed(event: VaultRewardDistributed): voi
     return
   }
   let vault = Vault.load((1).toString())
+  if (!vault) return
   vault.vaultReward = vault.vaultReward.plus(event.params.amount)
   vault.save()
 }

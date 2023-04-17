@@ -5,13 +5,13 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy": "graph deploy --product hosted-service ethandev0/pikatradingcontest",
-    "create-local": "graph create --node http://localhost:8020/ ethandev0/PikaPerpV3",
-    "remove-local": "graph remove --node http://localhost:8020/ PikaPerpV3",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ethandev0/PikaPerpV3"
+    "create-local": "graph create --node http://localhost:8020/ ethandev0/pikatradingcontest",
+    "remove-local": "graph remove --node http://localhost:8020/ pikatradingcontest",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ethandev0/pikatradingcontest"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.21.0",
-    "@graphprotocol/graph-ts": "0.20.0",
+    "@graphprotocol/graph-cli": "^0.46.1",
+    "@graphprotocol/graph-ts": "^0.29.3",
     "web3": "^1.7.3",
     "web3-utils": "^1.7.4"
   }

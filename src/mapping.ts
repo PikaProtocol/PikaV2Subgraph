@@ -42,7 +42,7 @@ export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31536000)
-export const START_TIME = BigInt.fromI32(1681632000)
+export const START_TIME = BigInt.fromI32(1681718400)
 export const END_TIME = BigInt.fromI32(1682928000)
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
@@ -475,10 +475,10 @@ export function handleProductUpdated(event: ProductUpdated): void {
     product.isActive = event.params.product.isActive
 
     product.minPriceChange = event.params.product.minPriceChange
+    product.weight = event.params.product.weight
     product.reserve = event.params.product.reserve
 
     product.save()
-
   }
 
 }
@@ -501,10 +501,16 @@ export function handleVaultUpdated(event: VaultUpdated): void {
     vault.cumulativePnl = ZERO_BI
     vault.cumulativeVolume = ZERO_BI
     vault.cumulativeMargin = ZERO_BI
+    vault.cumulativeFee = ZERO_BI
 
     vault.positionCount = ZERO_BI
     vault.tradeCount = ZERO_BI
-
+    vault.txCount = ZERO_BI
+    vault.liquidationCount = ZERO_BI
+    vault.userCount = ZERO_BI
+    vault.protocolReward = ZERO_BI
+    vault.pikaReward = ZERO_BI
+    vault.vaultReward = ZERO_BI
   }
 
   vault.updatedAtTimestamp = event.block.timestamp

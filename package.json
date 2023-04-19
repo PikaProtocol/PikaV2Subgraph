@@ -10,7 +10,7 @@
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ethandev0/PikaPerpV3"
   },
   "dependencies": {
-    "@graphprotocol/graph-cli": "^0.21.0",
+    "@graphprotocol/graph-cli": "^0.21.2",
     "@graphprotocol/graph-ts": "0.20.0",
     "web3": "^1.7.3",
     "web3-utils": "^1.7.4"

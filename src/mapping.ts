@@ -41,7 +41,6 @@ export const TWO_BI = BigInt.fromI32(2)
 export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
-export const YEAR_BI = BigInt.fromI32(31536000)
 export const START_TIME = BigInt.fromI32(1681718400)
 export const END_TIME = BigInt.fromI32(1682928000)
 function getVaultDayData(event: ethereum.Event): VaultDayData {
@@ -59,6 +58,7 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
     vaultDayData.cumulativeFee = ZERO_BI
     vaultDayData.positionCount = ZERO_BI
     vaultDayData.tradeCount = ZERO_BI
+    vaultDayData.txCount = ZERO_BI
     vaultDayData.liquidatorReward = ZERO_BI
     vaultDayData.remainingReward = ZERO_BI
     vaultDayData.save()

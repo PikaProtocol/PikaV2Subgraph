@@ -55,8 +55,12 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
     vaultDayData.date = BigInt.fromI32(day_id * 86400)
     vaultDayData.cumulativeVolume = ZERO_BI
     vaultDayData.cumulativeMargin = ZERO_BI
+    vaultDayData.cumulativePnl = ZERO_BI
+    vaultDayData.cumulativeFee = ZERO_BI
     vaultDayData.positionCount = ZERO_BI
     vaultDayData.tradeCount = ZERO_BI
+    vaultDayData.liquidatorReward = ZERO_BI
+    vaultDayData.remainingReward = ZERO_BI
     vaultDayData.save()
   }
 

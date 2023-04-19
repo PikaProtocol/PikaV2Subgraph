@@ -9,25 +9,25 @@ type Vault @entity {
   updatedAtBlockNumber: BigInt
 
   cap: BigInt!
-  balance: BigInt!
-  staked: BigInt!
-  shares: BigInt!
+  balance: BigInt
+  staked: BigInt
+  shares: BigInt
   stakingPeriod: BigInt!
 
-  cumulativePnl: BigInt!
-  cumulativeVolume: BigInt!
-  cumulativeMargin: BigInt!
-  cumulativeFee: BigInt!
+  cumulativePnl: BigInt
+  cumulativeVolume: BigInt
+  cumulativeMargin: BigInt
+  cumulativeFee: BigInt
 
-  positionCount: BigInt!
-  tradeCount: BigInt!
-  txCount: BigInt!
-  liquidationCount: BigInt!
-  userCount: BigInt!
+  positionCount: BigInt
+  tradeCount: BigInt
+  txCount: BigInt
+  liquidationCount: BigInt
+  userCount: BigInt
 
-  protocolReward: BigInt!
-  pikaReward: BigInt!
-  vaultReward: BigInt!
+  protocolReward: BigInt
+  pikaReward: BigInt
+  vaultReward: BigInt
 
 
 }
@@ -48,12 +48,12 @@ type Product @entity {
   weight: BigInt!
   reserve: BigInt!
 
-  cumulativePnl: BigInt!
-  cumulativeVolume: BigInt!
-  cumulativeMargin: BigInt!
+  cumulativePnl: BigInt
+  cumulativeVolume: BigInt
+  cumulativeMargin: BigInt
 
-  positionCount: BigInt!
-  tradeCount: BigInt!
+  positionCount: BigInt
+  tradeCount: BigInt
 
   createdAtTimestamp: BigInt
   createdAtBlockNumber: BigInt
@@ -126,20 +126,20 @@ type Transaction @entity { # open or close
 
 type User @entity {
   id: ID! # user address
-  userNumber: BigInt!
+  userNumber: BigInt
   createdAtTimestamp: BigInt
-  depositAmount: BigInt!
-  withdrawAmount: BigInt!
-  shares: BigInt!
-  reward: BigInt!
-  remainingAmount: BigInt!
-  netAmount: BigInt!
-  netAmountWithReward: BigInt!
+  depositAmount: BigInt
+  withdrawAmount: BigInt
+  shares: BigInt
+  reward: BigInt
+  remainingAmount: BigInt
+  netAmount: BigInt
+  netAmountWithReward: BigInt
 
-  tradeCount: BigInt!
-  volume: BigInt!
-  fees: BigInt!
-  pnl: BigInt!
+  tradeCount: BigInt
+  volume: BigInt
+  fees: BigInt
+  pnl: BigInt
 }
 
 type Trade @entity { # closed position
@@ -201,24 +201,24 @@ type VaultDayData @entity {
 
   date: BigInt! # dayStartTimestamp = dayID * 86400
 
-  cumulativePnl: BigInt!
-  cumulativeVolume: BigInt!
-  cumulativeMargin: BigInt!
-  cumulativeFee: BigInt!
+  cumulativePnl: BigInt
+  cumulativeVolume: BigInt
+  cumulativeMargin: BigInt
+  cumulativeFee: BigInt
 
-  positionCount: BigInt!
-  tradeCount: BigInt!
-  txCount: BigInt!
-  liquidatorReward: BigInt!
-  remainingReward: BigInt!
+  positionCount: BigInt
+  tradeCount: BigInt
+  txCount: BigInt
+  liquidatorReward: BigInt
+  remainingReward: BigInt
 }
 
 type Stake @entity {
 
   id: ID! #stakeId
 
-  amount: BigInt!
-  shares: BigInt!
+  amount: BigInt
+  shares: BigInt
   timestamp: BigInt
 
 }
@@ -245,7 +245,7 @@ type Order @entity {
   isOpen: Boolean!
   triggerPrice: BigInt!
   triggerAboveThreshold: Boolean!
-  executionFee: BigInt!
+  executionFee: BigInt
 
   createdTimestamp: Int!
   cancelledTimestamp: Int
@@ -266,7 +266,7 @@ type MarketOrder @entity {
   isLong: Boolean!
   isOpen: Boolean!
   acceptablePrice: BigInt!
-  executionFee: BigInt!
+  executionFee: BigInt
 
   createdBlockNumber: Int!
   createdTimestamp: Int!

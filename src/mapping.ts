@@ -54,10 +54,13 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
   if (vaultDayData == null) {
     vaultDayData = new VaultDayData(day_id.toString())
     vaultDayData.date = BigInt.fromI32(day_id * 86400)
+    vaultDayData.cumulativePnl = ZERO_BI
     vaultDayData.cumulativeVolume = ZERO_BI
     vaultDayData.cumulativeMargin = ZERO_BI
+    vaultDayData.cumulativeFee = ZERO_BI
     vaultDayData.positionCount = ZERO_BI
     vaultDayData.tradeCount = ZERO_BI
+    vaultDayData.txCount = ZERO_BI
     vaultDayData.save()
   }
 
@@ -67,9 +70,9 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
 
 export function handleNewPosition(event: NewPosition): void {
   let vault = Vault.load((1).toString())
-
+  if (!vault) return
   let product = Product.load((event.params.productId).toString())
-
+  if (!product) return
   // create transaction
   let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "0")
   transaction.txHash = event.transaction.hash.toHexString()
@@ -159,10 +162,17 @@ export function handleNewPosition(event: NewPosition): void {
       vault.userCount = vault.userCount.plus(ONE_BI)
       user.userNumber = vault.userCount
       user.createdAtTimestamp = event.block.timestamp
+      user.depositAmount = ZERO_BI
+      user.withdrawAmount = ZERO_BI
+      user.shares = ZERO_BI
+      user.aveDepositTimestamp = ZERO_BI
+      user.aveStakedShares = ZERO_BI
       user.tradeCount = ONE_BI
       user.volume = singleAmount
       user.fees = singleAmount.times(product.fee).div(FEE_BI)
       user.aveStakedShares = ZERO_BI
+      user.tradeCount = ZERO_BI
+      user.pnl = ZERO_BI
     } else {
       user.tradeCount = user.tradeCount.plus(ONE_BI)
       user.volume = user.volume.plus(singleAmount)
@@ -195,12 +205,14 @@ export function handleAddMargin(event: AddMargin): void {
     // volume updates
 
     let vault = Vault.load((1).toString())
+    if (!vault) return
     vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
 
     let vaultDayData = getVaultDayData(event)
     vaultDayData.cumulativeMargin = vaultDayData.cumulativeMargin.plus(event.params.margin)
 
     let product = Product.load((position.productId).toString())
+    if (!product) return
     product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)
 
     // Update liquidation price
@@ -234,15 +246,16 @@ export function handleAddMargin(event: AddMargin): void {
 
 export function handleClosePosition(event: ClosePosition): void {
   let product = Product.load((event.params.productId).toString())
-
+  if (!product) return
   let position = Position.load(event.params.positionId.toString())
 
   if (position) {
 
     let vault = Vault.load((1).toString())
+    if (!vault) return
     let vaultDayData = getVaultDayData(event)
     let product = Product.load((event.params.productId).toString())
-
+    if (!product) return
     vault.tradeCount = vault.tradeCount.plus(ONE_BI)
     vault.txCount = vault.txCount.plus(ONE_BI)
 
@@ -376,7 +389,17 @@ export function handleClosePosition(event: ClosePosition): void {
         vault.userCount = vault.userCount.plus(ONE_BI)
         user.userNumber = vault.userCount
         user.createdAtTimestamp = event.block.timestamp
+        user.depositAmount = ZERO_BI
+        user.withdrawAmount = ZERO_BI
+        user.aveDepositTimestamp = ZERO_BI
         user.aveStakedShares = ZERO_BI
+        user.shares = ZERO_BI
+        user.netAmount = ZERO_BI
+        user.netAmountWithReward = ZERO_BI
+        user.tradeCount = ZERO_BI
+        user.volume = ZERO_BI
+        user.fees = ZERO_BI
+        user.pnl = ZERO_BI
       }
       // Update user data
       user.tradeCount = user.tradeCount.plus(ONE_BI)
@@ -467,7 +490,6 @@ export function handleVaultUpdated(event: VaultUpdated): void {
   if (vault == null) {
 
     vault = new Vault((1).toString())
-
     vault.createdAtTimestamp = event.block.timestamp
     vault.createdAtBlockNumber = event.block.number
 
@@ -481,7 +503,11 @@ export function handleVaultUpdated(event: VaultUpdated): void {
 
     vault.positionCount = ZERO_BI
     vault.tradeCount = ZERO_BI
-
+    vault.userCount = ZERO_BI
+    vault.protocolReward = ZERO_BI
+    vault.pikaReward = ZERO_BI
+    vault.vaultReward = ZERO_BI
+    vault.txCount = ZERO_BI
   }
 
   vault.updatedAtTimestamp = event.block.timestamp
@@ -500,6 +526,7 @@ export function handleStaked(event: Staked): void {
     return
   }
   let vault = Vault.load((1).toString())
+  if (!vault) return
   vault.balance = vault.balance.plus(event.params.amount)
   vault.staked = vault.staked.plus(event.params.amount)
   vault.shares = vault.shares.plus(event.params.shares)
@@ -525,9 +552,16 @@ export function handleStaked(event: Staked): void {
     user.userNumber = vault.userCount
     user.createdAtTimestamp = event.block.timestamp
     user.depositAmount = event.params.amount
+    user.withdrawAmount = ZERO_BI
     user.shares = event.params.shares
     user.aveStakedShares = ZERO_BI
     user.aveDepositTimestamp = event.block.timestamp
+    user.netAmount = ZERO_BI
+    user.netAmountWithReward = ZERO_BI
+    user.tradeCount = ZERO_BI
+    user.volume = ZERO_BI
+    user.fees = ZERO_BI
+    user.pnl = ZERO_BI
   } else {
     if (user.shares.plus(event.params.shares).equals(ZERO_BI)) {
       user.aveDepositTimestamp = BigInt.fromI32(0)
@@ -552,6 +586,7 @@ export function handleRedeemed(event: Redeemed): void {
     return
   }
   let vault = Vault.load((1).toString())
+  if (!vault) return
   vault.staked = vault.staked.minus(event.params.amount)
   vault.shares = vault.shares.minus(event.params.shares)
   vault.balance = vault.balance.minus(event.params.shareBalance)
@@ -616,46 +651,50 @@ export function handleReinvested(event: Reinvested): void {
 
 export function handleProtocolRewardDistributed(event: ProtocolRewardDistributed): void {
   let vault = Vault.load((1).toString())
+  if (!vault) return
   vault.protocolReward = vault.protocolReward.plus(event.params.amount)
   vault.save()
 }
 
 export function handlePikaRewardDistributed(event: PikaRewardDistributed): void {
   let vault = Vault.load((1).toString())
+  if (!vault) return
   vault.pikaReward = vault.pikaReward.plus(event.params.amount)
   vault.save()
 }
 
 export function handleVaultRewardDistributed(event: VaultRewardDistributed): void {
   let vault = Vault.load((1).toString())
+  if (!vault) return
   vault.vaultReward = vault.vaultReward.plus(event.params.amount)
   vault.save()
 }
 
-export function handlePositionLiquidated(event: PositionLiquidated): void {
-  let vault = Vault.load((1).toString())
-  let liquidation = new Liquidation(vault.liquidationCount.toString())
-
-  liquidation.txHash = event.transaction.hash.toHexString()
-  liquidation.positionId = event.params.positionId
-  liquidation.liquidator = event.params.liquidator
-  liquidation.liquidatorReward = event.params.liquidatorReward
-  liquidation.remainingReward = event.params.remainingReward
-
-  liquidation.timestamp = event.block.timestamp
-  liquidation.blockNumber = event.block.number
-  vault.liquidationCount = vault.liquidationCount.plus(ONE_BI)
-
-  let vaultDayData = getVaultDayData(event)
-  vaultDayData.liquidatorReward = vaultDayData.liquidatorReward + event.params.liquidatorReward
-  vaultDayData.remainingReward = vaultDayData.remainingReward + event.params.remainingReward
-
-  vault.save()
-  liquidation.save()
-  vaultDayData.save()
-}
-
-export function handleOwnerUpdated(event: OwnerUpdated): void {}
-
-
+// export function handlePositionLiquidated(event: PositionLiquidated): void {
+//   let vault = Vault.load((1).toString())
+//   if (!vault) return
+//   let liquidation = new Liquidation(vault.liquidationCount.toString())
+//
+//   liquidation.txHash = event.transaction.hash.toHexString()
+//   liquidation.positionId = event.params.positionId
+//   liquidation.liquidator = event.params.liquidator
+//   liquidation.liquidatorReward = event.params.liquidatorReward
+//   liquidation.remainingReward = event.params.remainingReward
+//
+//   liquidation.timestamp = event.block.timestamp
+//   liquidation.blockNumber = event.block.number
+//   vault.liquidationCount = vault.liquidationCount.plus(ONE_BI)
+//
+//   let vaultDayData = getVaultDayData(event)
+//   vaultDayData.liquidatorReward = vaultDayData.liquidatorReward + event.params.liquidatorReward
+//   vaultDayData.remainingReward = vaultDayData.remainingReward + event.params.remainingReward
+//
+//   vault.save()
+//   liquidation.save()
+//   vaultDayData.save()
+// }
+//
+// export function handleOwnerUpdated(event: OwnerUpdated): void {}
+//
+//
 

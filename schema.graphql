@@ -9,25 +9,25 @@ type Vault @entity {
   updatedAtBlockNumber: BigInt
 
   cap: BigInt!
-  balance: BigInt
-  staked: BigInt
-  shares: BigInt
+  balance: BigInt!
+  staked: BigInt!
+  shares: BigInt!
   stakingPeriod: BigInt!
 
-  cumulativePnl: BigInt
-  cumulativeVolume: BigInt
-  cumulativeMargin: BigInt
+  cumulativePnl: BigInt!
+  cumulativeVolume: BigInt!
+  cumulativeMargin: BigInt!
   cumulativeFee: BigInt
 
-  positionCount: BigInt
-  tradeCount: BigInt
-  txCount: BigInt
+  positionCount: BigInt!
+  tradeCount: BigInt!
+  txCount: BigInt!
   liquidationCount: BigInt
-  userCount: BigInt
+  userCount: BigInt!
 
-  protocolReward: BigInt
-  pikaReward: BigInt
-  vaultReward: BigInt
+  protocolReward: BigInt!
+  pikaReward: BigInt!
+  vaultReward: BigInt!
 
 
 }
@@ -48,12 +48,12 @@ type Product @entity {
   weight: BigInt!
   reserve: BigInt!
 
-  cumulativePnl: BigInt
-  cumulativeVolume: BigInt
-  cumulativeMargin: BigInt
+  cumulativePnl: BigInt!
+  cumulativeVolume: BigInt!
+  cumulativeMargin: BigInt!
 
-  positionCount: BigInt
-  tradeCount: BigInt
+  positionCount: BigInt!
+  tradeCount: BigInt!
 
   createdAtTimestamp: BigInt
   createdAtBlockNumber: BigInt
@@ -128,20 +128,20 @@ type User @entity {
   id: ID! # user address
   userNumber: BigInt
   createdAtTimestamp: BigInt
-  aveDepositTimestamp: BigInt
-  depositAmount: BigInt
-  withdrawAmount: BigInt
-  shares: BigInt
-  aveStakedShares: BigInt
+  aveDepositTimestamp: BigInt!
+  depositAmount: BigInt!
+  withdrawAmount: BigInt!
+  shares: BigInt!
+  aveStakedShares: BigInt!
   reward: BigInt
   remainingAmount: BigInt
-  netAmount: BigInt
+  netAmount: BigInt!
   netAmountWithReward: BigInt
 
-  tradeCount: BigInt
-  volume: BigInt
-  fees: BigInt
-  pnl: BigInt
+  tradeCount: BigInt!
+  volume: BigInt!
+  fees: BigInt!
+  pnl: BigInt!
 }
 
 type Trade @entity { # closed position
@@ -203,14 +203,14 @@ type VaultDayData @entity {
 
   date: BigInt! # dayStartTimestamp = dayID * 86400
 
-  cumulativePnl: BigInt
-  cumulativeVolume: BigInt
-  cumulativeMargin: BigInt
-  cumulativeFee: BigInt
+  cumulativePnl: BigInt!
+  cumulativeVolume: BigInt!
+  cumulativeMargin: BigInt!
+  cumulativeFee: BigInt!
 
-  positionCount: BigInt
-  tradeCount: BigInt
-  txCount: BigInt
+  positionCount: BigInt!
+  tradeCount: BigInt!
+  txCount: BigInt!
   liquidatorReward: BigInt
   remainingReward: BigInt
 }
@@ -219,8 +219,8 @@ type Stake @entity {
 
   id: ID! #stakeId
 
-  amount: BigInt
-  shares: BigInt
+  amount: BigInt!
+  shares: BigInt!
   timestamp: BigInt
 
 }

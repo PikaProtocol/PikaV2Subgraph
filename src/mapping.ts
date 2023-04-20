@@ -496,7 +496,9 @@ export function handleVaultUpdated(event: VaultUpdated): void {
 }
 
 export function handleStaked(event: Staked): void {
-
+  if (event.block.timestamp > END_TIME) {
+    return
+  }
   let vault = Vault.load((1).toString())
   vault.balance = vault.balance.plus(event.params.amount)
   vault.staked = vault.staked.plus(event.params.amount)
@@ -546,7 +548,9 @@ export function handleStaked(event: Staked): void {
 }
 
 export function handleRedeemed(event: Redeemed): void {
-
+  if (event.block.timestamp > END_TIME) {
+    return
+  }
   let vault = Vault.load((1).toString())
   vault.staked = vault.staked.minus(event.params.amount)
   vault.shares = vault.shares.minus(event.params.shares)

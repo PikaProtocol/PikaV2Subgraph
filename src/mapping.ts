@@ -423,6 +423,7 @@ export function handleVaultUpdated(event: VaultUpdated): void {
     vault.createdAtTimestamp = event.block.timestamp
     vault.createdAtBlockNumber = event.block.number
 
+    vault.userCount = ZERO_BI
     vault.balance = ZERO_BI
     vault.staked = ZERO_BI
     vault.shares = ZERO_BI

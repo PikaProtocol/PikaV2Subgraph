@@ -162,6 +162,7 @@ export function handleNewPosition(event: NewPosition): void {
       user.tradeCount = ONE_BI
       user.volume = singleAmount
       user.fees = singleAmount.times(product.fee).div(FEE_BI)
+      user.aveStakedShares = ZERO_BI
     } else {
       user.tradeCount = user.tradeCount.plus(ONE_BI)
       user.volume = user.volume.plus(singleAmount)
@@ -375,6 +376,7 @@ export function handleClosePosition(event: ClosePosition): void {
         vault.userCount = vault.userCount.plus(ONE_BI)
         user.userNumber = vault.userCount
         user.createdAtTimestamp = event.block.timestamp
+        user.aveStakedShares = ZERO_BI
       }
       // Update user data
       user.tradeCount = user.tradeCount.plus(ONE_BI)
@@ -522,6 +524,7 @@ export function handleStaked(event: Staked): void {
     user.createdAtTimestamp = event.block.timestamp
     user.depositAmount = event.params.amount
     user.shares = event.params.shares
+    user.aveStakedShares = ZERO_BI
     user.aveDepositTimestamp = event.block.timestamp
   } else {
     if (user.shares.plus(event.params.shares).equals(ZERO_BI)) {

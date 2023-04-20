@@ -43,6 +43,7 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
     vaultDayData.date = BigInt.fromI32(day_id * 86400)
     vaultDayData.cumulativeVolume = ZERO_BI
     vaultDayData.cumulativeMargin = ZERO_BI
+    vaultDayData.cumulativePnl = ZERO_BI
     vaultDayData.positionCount = ZERO_BI
     vaultDayData.tradeCount = ZERO_BI
     vaultDayData.save()
@@ -82,7 +83,7 @@ export function handleNewPosition(event: NewPosition): void {
     singleAmount = amount.minus(position.amount)
   }
   transaction.singleAmount = singleAmount
-  let tradeFee = singleAmount.times(product.fee as BigInt).div(FEE_BI)
+  let tradeFee = singleAmount.times(product.fee).div(FEE_BI)
   transaction.tradeFee = tradeFee
   position.productId = event.params.productId
   position.leverage = event.params.leverage
@@ -108,19 +109,19 @@ export function handleNewPosition(event: NewPosition): void {
   position.liquidationPrice = liquidationPrice
 
   // volume updates
-  vault.cumulativeVolume = (vault.cumulativeVolume as BigInt).plus(singleAmount)
-  vault.cumulativeMargin = (vault.cumulativeMargin as BigInt).plus(event.params.margin)
-  vault.positionCount = (vault.positionCount as BigInt).plus(ONE_BI)
-  vault.txCount = (vault.txCount as BigInt).plus(ONE_BI)
+  vault.cumulativeVolume = vault.cumulativeVolume.plus(singleAmount)
+  vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
+  vault.positionCount = vault.positionCount.plus(ONE_BI)
+  vault.txCount = vault.txCount.plus(ONE_BI)
 
   let vaultDayData = getVaultDayData(event)
-  vaultDayData.cumulativeVolume = (vaultDayData.cumulativeVolume as BigInt).plus(amount)
-  vaultDayData.cumulativeMargin = (vaultDayData.cumulativeMargin as BigInt).plus(event.params.margin)
-  vaultDayData.positionCount = (vaultDayData.positionCount as BigInt).plus(ONE_BI)
+  vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(amount)
+  vaultDayData.cumulativeMargin = vaultDayData.cumulativeMargin.plus(event.params.margin)
+  vaultDayData.positionCount = vaultDayData.positionCount.plus(ONE_BI)
 
-  product.cumulativeVolume = (product.cumulativeVolume as BigInt).plus(amount)
-  product.cumulativeMargin = (product.cumulativeMargin as BigInt).plus(event.params.margin)
-  product.positionCount = (product.positionCount as BigInt).plus(ONE_BI)
+  product.cumulativeVolume = product.cumulativeVolume.plus(amount)
+  product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)
+  product.positionCount = product.positionCount.plus(ONE_BI)
 
   if (position.isLong) {
     product.openInterestLong = product.openInterestLong.plus(amount)
@@ -132,16 +133,24 @@ export function handleNewPosition(event: NewPosition): void {
   let user = User.load(event.params.user.toHexString())
   if (!user) {
     user = new User(event.params.user.toHexString())
-    vault.userCount = (vault.userCount as BigInt).plus(ONE_BI)
+    vault.userCount = vault.userCount.plus(ONE_BI)
     user.userNumber = vault.userCount
     user.createdAtTimestamp = event.block.timestamp
+    user.depositAmount = ZERO_BI
+    user.withdrawAmount = ZERO_BI
+    user.reward = ZERO_BI
+    user.netAmount = ZERO_BI
+    user.netAmountWithReward = ZERO_BI
     user.tradeCount = ONE_BI
     user.volume = singleAmount
     user.fees = singleAmount.times(product.fee).div(FEE_BI)
+    user.aveStakedShares = ZERO_BI
+    user.aveDepositTimestamp = ZERO_BI
+    user.pnl = ZERO_BI
   } else {
-    user.tradeCount = (user.tradeCount as BigInt).plus(ONE_BI)
-    user.volume = (user.volume as BigInt).plus(singleAmount)
-    user.fees = (user.fees as BigInt).plus(singleAmount.times(product.fee).div(FEE_BI))
+    user.tradeCount = user.tradeCount.plus(ONE_BI)
+    user.volume = user.volume.plus(singleAmount)
+    user.fees = user.fees.plus(singleAmount.times(product.fee).div(FEE_BI))
   }
 
   user.save()
@@ -169,14 +178,14 @@ export function handleAddMargin(event: AddMargin): void {
 
     let vault = Vault.load((1).toString())
     if (!vault) return
-    vault.cumulativeMargin = (vault.cumulativeMargin as BigInt).plus(event.params.margin)
+    vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
 
     let vaultDayData = getVaultDayData(event)
-    vaultDayData.cumulativeMargin = (vaultDayData.cumulativeMargin as BigInt).plus(event.params.margin)
+    vaultDayData.cumulativeMargin = vaultDayData.cumulativeMargin.plus(event.params.margin)
 
     let product = Product.load((position.productId).toString())
     if (!product) return
-    product.cumulativeMargin = (product.cumulativeMargin as BigInt).plus(event.params.margin)
+    product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)
 
     // Update liquidation price
 
@@ -210,8 +219,8 @@ export function handleClosePosition(event: ClosePosition): void {
     let vaultDayData = getVaultDayData(event)
     let product = Product.load((event.params.productId).toString())
     if (!product) return
-    vault.tradeCount = (vault.tradeCount as BigInt).plus(ONE_BI)
-    vault.txCount = (vault.txCount as BigInt).plus(ONE_BI)
+    vault.tradeCount = vault.tradeCount.plus(ONE_BI)
+    vault.txCount = vault.txCount.plus(ONE_BI)
 
     // create transaction
     let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "1")
@@ -232,7 +241,7 @@ export function handleClosePosition(event: ClosePosition): void {
     transaction.blockNumber = event.block.number
 
     // create new trade
-    let trade = new Trade((vault.tradeCount as BigInt).toString())
+    let trade = new Trade(vault.tradeCount.toString())
     trade.txHash = event.transaction.hash.toHexString()
 
     trade.positionId = event.params.positionId
@@ -270,8 +279,8 @@ export function handleClosePosition(event: ClosePosition): void {
 
     if (trade.isFullClose) {
       store.remove('Position', event.params.positionId.toString())
-      vault.positionCount = (vault.positionCount as BigInt).minus(ONE_BI)
-      product.positionCount = (product.positionCount as BigInt).minus(ONE_BI)
+      vault.positionCount = vault.positionCount.minus(ONE_BI)
+      product.positionCount = product.positionCount.minus(ONE_BI)
     } else {
       // Update position with partial close, e.g. subtract margin
       position.margin = position.margin.minus(event.params.margin)
@@ -281,28 +290,28 @@ export function handleClosePosition(event: ClosePosition): void {
 
     // update volumes
 
-    vault.cumulativeVolume = (vault.cumulativeVolume as BigInt).plus(amount)
-    vault.cumulativeMargin = (vault.cumulativeMargin as BigInt).plus(event.params.margin)
+    vault.cumulativeVolume = vault.cumulativeVolume.plus(amount)
+    vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
 
     if (trade.pnlIsNegative) {
-      vault.cumulativePnl = (vault.cumulativePnl as BigInt).minus(event.params.pnl)
-      vault.balance = (vault.balance as BigInt).plus(event.params.pnl)
-      vaultDayData.cumulativePnl = (vaultDayData.cumulativePnl as BigInt).minus(event.params.pnl)
-      product.cumulativePnl = (product.cumulativePnl as BigInt).minus(event.params.pnl)
+      vault.cumulativePnl = vault.cumulativePnl.minus(event.params.pnl)
+      vault.balance = vault.balance.plus(event.params.pnl)
+      vaultDayData.cumulativePnl = vaultDayData.cumulativePnl.minus(event.params.pnl)
+      product.cumulativePnl = product.cumulativePnl.minus(event.params.pnl)
     } else {
-      vault.cumulativePnl = (vault.cumulativePnl as BigInt).plus(event.params.pnl)
-      vault.balance = !trade.wasLiquidated ? (vault.balance as BigInt).minus(event.params.pnl) : (vault.balance as BigInt).plus(event.params.pnl)
-      vaultDayData.cumulativePnl = (vaultDayData.cumulativePnl as BigInt).plus(event.params.pnl)
-      product.cumulativePnl = (product.cumulativePnl as BigInt).plus(event.params.pnl)
+      vault.cumulativePnl = vault.cumulativePnl.plus(event.params.pnl)
+      vault.balance = !trade.wasLiquidated ? vault.balance.minus(event.params.pnl) : vault.balance.plus(event.params.pnl)
+      vaultDayData.cumulativePnl = vaultDayData.cumulativePnl.plus(event.params.pnl)
+      product.cumulativePnl = product.cumulativePnl.plus(event.params.pnl)
     }
 
-    vaultDayData.cumulativeVolume = (vaultDayData.cumulativeVolume as BigInt).plus(amount)
-    vaultDayData.cumulativeMargin = (vaultDayData.cumulativeMargin as BigInt).plus(event.params.margin)
-    vaultDayData.tradeCount = (vaultDayData.tradeCount as BigInt).plus(ONE_BI)
+    vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(amount)
+    vaultDayData.cumulativeMargin = vaultDayData.cumulativeMargin.plus(event.params.margin)
+    vaultDayData.tradeCount = vaultDayData.tradeCount.plus(ONE_BI)
 
-    product.cumulativeVolume = (product.cumulativeVolume as BigInt).plus(amount)
-    product.cumulativeMargin = (product.cumulativeMargin as BigInt).plus(event.params.margin)
-    product.tradeCount = (product.tradeCount as BigInt).plus(ONE_BI)
+    product.cumulativeVolume = product.cumulativeVolume.plus(amount)
+    product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)
+    product.tradeCount = product.tradeCount.plus(ONE_BI)
 
     if (position.isLong) {
       if (product.openInterestLong.minus(amount).lt(ZERO_BI)) {
@@ -322,15 +331,15 @@ export function handleClosePosition(event: ClosePosition): void {
     let user = User.load(event.params.user.toHexString())
     if (!user) return
     // Update user data
-    user.tradeCount = (user.tradeCount as BigInt).plus(ONE_BI)
-    user.volume = (user.volume as BigInt).plus(amount)
+    user.tradeCount = user.tradeCount.plus(ONE_BI)
+    user.volume = user.volume.plus(amount)
     if (!trade.wasLiquidated) {
-      user.fees = (user.fees as BigInt).plus(tradeFee)
+      user.fees = user.fees.plus(tradeFee)
     }
     if (trade.wasLiquidated && event.params.pnl.gt(ZERO_BI)) {
-      user.pnl = (user.pnl as BigInt).minus(event.params.pnl)
+      user.pnl = user.pnl.minus(event.params.pnl)
     } else {
-      user.pnl = (user.pnl as BigInt).plus(event.params.pnl)
+      user.pnl = user.pnl.plus(event.params.pnl)
     }
 
 
@@ -423,6 +432,7 @@ export function handleVaultUpdated(event: VaultUpdated): void {
     vault.createdAtTimestamp = event.block.timestamp
     vault.createdAtBlockNumber = event.block.number
 
+    vault.cap = ZERO_BI
     vault.userCount = ZERO_BI
     vault.balance = ZERO_BI
     vault.staked = ZERO_BI
@@ -431,6 +441,10 @@ export function handleVaultUpdated(event: VaultUpdated): void {
     vault.cumulativePnl = ZERO_BI
     vault.cumulativeVolume = ZERO_BI
     vault.cumulativeMargin = ZERO_BI
+
+    vault.liquidationCount = ZERO_BI
+    vault.vaultReward = ZERO_BI
+    vault.pikaReward = ZERO_BI
 
     vault.positionCount = ZERO_BI
     vault.tradeCount = ZERO_BI
@@ -454,9 +468,9 @@ export function handleStaked(event: Staked): void {
   }
   let vault = Vault.load((1).toString())
   if (!vault) return
-  vault.balance = (vault.balance as BigInt).plus(event.params.amount)
-  vault.staked = (vault.staked as BigInt).plus(event.params.amount)
-  vault.shares = (vault.shares as BigInt).plus(event.params.shares)
+  vault.balance = vault.balance.plus(event.params.amount)
+  vault.staked = vault.staked.plus(event.params.amount)
+  vault.shares = vault.shares.plus(event.params.shares)
 
   let stake = Stake.load(event.params.user.toHexString())
 
@@ -467,28 +481,37 @@ export function handleStaked(event: Staked): void {
     stake.amount = event.params.amount
     stake.shares = event.params.shares
   } else {
-    stake.amount = (stake.amount as BigInt).plus(event.params.amount)
-    stake.shares = (stake.shares as BigInt).plus(event.params.shares)
+    stake.amount = stake.amount.plus(event.params.amount)
+    stake.shares = stake.shares.plus(event.params.shares)
   }
   stake.timestamp = event.block.timestamp
 
   let user = User.load(event.params.user.toHexString())
   if (!user) {
     user = new User(event.params.user.toHexString())
-    vault.userCount = (vault.userCount as BigInt).plus(ONE_BI)
+    vault.userCount = vault.userCount.plus(ONE_BI)
     user.userNumber = vault.userCount
     user.createdAtTimestamp = event.block.timestamp
     user.depositAmount = event.params.amount
+    user.withdrawAmount = ZERO_BI
+    user.reward = ZERO_BI
+    user.netAmount = ZERO_BI
+    user.netAmountWithReward = ZERO_BI
     user.shares = event.params.shares
+    user.aveStakedShares = ZERO_BI
     user.aveDepositTimestamp = event.block.timestamp
+    user.volume = ZERO_BI
+    user.tradeCount = ZERO_BI
+    user.fees = ZERO_BI
+    user.pnl = ZERO_BI
   } else {
-    user.aveDepositTimestamp = ((user.shares as BigInt).times(user.aveDepositTimestamp as BigInt).plus
-    (event.params.shares.times(event.block.timestamp))).div((user.shares as BigInt).plus(event.params.shares))
-    user.depositAmount = (user.depositAmount as BigInt).plus(event.params.amount)
-    user.shares = (user.shares as BigInt).plus(event.params.shares)
+    user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp).plus
+    (event.params.shares.times(event.block.timestamp))).div(user.shares.plus(event.params.shares))
+    user.depositAmount = user.depositAmount.plus(event.params.amount)
+    user.shares =user.shares.plus(event.params.shares)
   }
-  user.netAmount = (user.withdrawAmount as BigInt).minus(user.depositAmount as BigInt)
-  user.netAmountWithReward = user.reward ? (user.netAmount as BigInt).plus(user.reward as BigInt) : user.netAmount
+  user.netAmount = user.withdrawAmount.minus(user.depositAmount)
+  user.netAmountWithReward = user.reward ? (user.netAmount).plus(user.reward) : user.netAmount
 
   stake.save()
   user.save()
@@ -502,9 +525,9 @@ export function handleRedeemed(event: Redeemed): void {
   }
   let vault = Vault.load((1).toString())
   if (!vault) return
-  vault.staked = (vault.staked as BigInt).minus(event.params.amount)
-  vault.shares = (vault.shares as BigInt).minus(event.params.shares)
-  vault.balance = (vault.balance as BigInt).minus(event.params.shareBalance)
+  vault.staked = vault.staked.minus(event.params.amount)
+  vault.shares = vault.shares.minus(event.params.shares)
+  vault.balance = vault.balance.minus(event.params.shareBalance)
   vault.save()
 
   let stake = Stake.load(event.params.user.toHexString())
@@ -512,18 +535,18 @@ export function handleRedeemed(event: Redeemed): void {
   if (event.params.isFullRedeem) {
     store.remove('Stake', event.params.user.toHexString())
   } else {
-    stake.amount = (stake.amount as BigInt).minus(event.params.amount)
-    stake.shares = (stake.shares as BigInt).minus(event.params.shares)
+    stake.amount = stake.amount.minus(event.params.amount)
+    stake.shares = stake.shares.minus(event.params.shares)
     stake.save()
   }
 
   let user = User.load(event.params.user.toHexString())
   if (!user) return
-  user.shares = (user.shares as BigInt).minus(event.params.shares)
-  user.aveStakedShares = (user.aveStakedShares as BigInt).plus((event.block.timestamp.minus(user.aveDepositTimestamp as BigInt)).times(event.params.shares).div(THIRTY_DAYS))
-  user.withdrawAmount = (user.withdrawAmount as BigInt).plus(event.params.shareBalance)
+  user.shares = user.shares.minus(event.params.shares)
+  user.aveStakedShares = user.aveStakedShares.plus((event.block.timestamp.minus(user.aveDepositTimestamp)).times(event.params.shares).div(THIRTY_DAYS))
+  user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
   user.netAmount = user.depositAmount ?
-      (user.withdrawAmount as BigInt).minus(user.depositAmount as BigInt) : ZERO_BI
+      user.withdrawAmount.minus(user.depositAmount) : ZERO_BI
 
   // let vaultFeeRewardAddress = event.address.toHexString();
   // let vaultFeeRewardContract = VaultFeeReward.bind(
@@ -531,7 +554,7 @@ export function handleRedeemed(event: Redeemed): void {
   // );
   // user.reward = user.reward ? vaultFeeRewardContract.getClaimableReward(event.params.user).plus(user.reward as BigInt) :
   //     vaultFeeRewardContract.getClaimableReward(event.params.user)
-  user.netAmountWithReward = user.reward ? (user.netAmount as BigInt).plus(user.reward as BigInt) : (user.netAmount as BigInt)
+  user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward) : user.netAmount
   user.save()
 }
 
@@ -544,8 +567,8 @@ export function handleClaimedReward(event: ClaimedReward): void {
   // let vaultFeeRewardContract = VaultFeeReward.bind(
   //     Address.fromString(vaultFeeRewardAddress)
   // );
-  user.reward = user.reward ? (event.params.amount.times(HUNDRED_BI)).plus(user.reward as BigInt) : event.params.amount.times(HUNDRED_BI)
-  user.netAmountWithReward = user.reward ? (user.netAmount as BigInt).plus(user.reward as BigInt) : (user.netAmount as BigInt)
+  user.reward = user.reward ? (event.params.amount.times(HUNDRED_BI)).plus(user.reward) : event.params.amount.times(HUNDRED_BI)
+  user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward) : user.netAmount
   user.save()
 }
 
@@ -558,36 +581,36 @@ export function handleReinvested(event: Reinvested): void {
   // let vaultFeeRewardContract = VaultFeeReward.bind(
   //     Address.fromString(vaultFeeRewardAddress)
   // );
-  user.reward = user.reward ? (event.params.amount.times(HUNDRED_BI)).plus(user.reward as BigInt) : event.params.amount.times(HUNDRED_BI)
-  user.netAmountWithReward = user.reward ? (user.netAmount as BigInt).plus(user.reward as BigInt) : (user.netAmount as BigInt)
+  user.reward = user.reward ? (event.params.amount.times(HUNDRED_BI)).plus(user.reward) : event.params.amount.times(HUNDRED_BI)
+  user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward) : user.netAmount
   user.save()
 }
 
 export function handleProtocolRewardDistributed(event: ProtocolRewardDistributed): void {
   let vault = Vault.load((1).toString())
   if (!vault) return
-  vault.protocolReward = (vault.protocolReward as BigInt).plus(event.params.amount)
+  vault.protocolReward = vault.protocolReward.plus(event.params.amount)
   vault.save()
 }
 
 export function handlePikaRewardDistributed(event: PikaRewardDistributed): void {
   let vault = Vault.load((1).toString())
   if (!vault) return
-  vault.pikaReward = (vault.pikaReward as BigInt).plus(event.params.amount)
+  vault.pikaReward = vault.pikaReward.plus(event.params.amount)
   vault.save()
 }
 
 export function handleVaultRewardDistributed(event: VaultRewardDistributed): void {
   let vault = Vault.load((1).toString())
   if (!vault) return
-  vault.vaultReward = (vault.vaultReward as BigInt).plus(event.params.amount)
+  vault.vaultReward = vault.vaultReward.plus(event.params.amount)
   vault.save()
 }
 
 export function handlePositionLiquidated(event: PositionLiquidated): void {
   let vault = Vault.load((1).toString())
   if (!vault) return
-  let liquidation = new Liquidation((vault.liquidationCount as BigInt).toString())
+  let liquidation = new Liquidation(vault.liquidationCount.toString())
 
   liquidation.txHash = event.transaction.hash.toHexString()
   liquidation.positionId = event.params.positionId
@@ -597,7 +620,7 @@ export function handlePositionLiquidated(event: PositionLiquidated): void {
 
   liquidation.timestamp = event.block.timestamp
   liquidation.blockNumber = event.block.number
-  vault.liquidationCount = (vault.liquidationCount as BigInt).plus(ONE_BI)
+  vault.liquidationCount = vault.liquidationCount.plus(ONE_BI)
 
   vault.save()
   liquidation.save()

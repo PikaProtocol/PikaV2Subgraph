@@ -2,7 +2,7 @@ type Vault @entity {
 
   id: ID! # 1
 
-  userCount: BigInt
+  userCount: BigInt!
 
   createdAtTimestamp: BigInt!
   createdAtBlockNumber: BigInt!
@@ -11,20 +11,20 @@ type Vault @entity {
   updatedAtBlockNumber: BigInt
 
   cap: BigInt!
-  balance: BigInt
-  staked: BigInt
-  shares: BigInt
+  balance: BigInt!
+  staked: BigInt!
+  shares: BigInt!
   stakingPeriod: BigInt!
   redemptionPeriod: BigInt!
   maxDailyDrawdown: BigInt!
 
-  cumulativePnl: BigInt
-  cumulativeVolume: BigInt
-  cumulativeMargin: BigInt
+  cumulativePnl: BigInt!
+  cumulativeVolume: BigInt!
+  cumulativeMargin: BigInt!
 
-  positionCount: BigInt
-  tradeCount: BigInt
-  txCount: BigInt
+  positionCount: BigInt!
+  tradeCount: BigInt!
+  txCount: BigInt!
 
 }
 
@@ -48,12 +48,12 @@ type Product @entity {
   minPriceChange: BigInt!
   reserve: BigInt!
 
-  cumulativePnl: BigInt
-  cumulativeVolume: BigInt
-  cumulativeMargin: BigInt
+  cumulativePnl: BigInt!
+  cumulativeVolume: BigInt!
+  cumulativeMargin: BigInt!
 
-  positionCount: BigInt
-  tradeCount: BigInt
+  positionCount: BigInt!
+  tradeCount: BigInt!
 
   createdAtTimestamp: BigInt
   createdAtBlockNumber: BigInt
@@ -73,7 +73,7 @@ type Position @entity { # open position
   oraclePrice: BigInt!
   margin: BigInt!
 
-  amount: BigInt
+  amount: BigInt!
 
   owner: Bytes!
 
@@ -157,12 +157,12 @@ type VaultDayData @entity {
 
   date: BigInt! # dayStartTimestamp = dayID * 86400
 
-  cumulativePnl: BigInt
-  cumulativeVolume: BigInt
-  cumulativeMargin: BigInt
+  cumulativePnl: BigInt!
+  cumulativeVolume: BigInt!
+  cumulativeMargin: BigInt!
 
-  positionCount: BigInt
-  tradeCount: BigInt
+  positionCount: BigInt!
+  tradeCount: BigInt!
 
 }
 
@@ -171,21 +171,21 @@ type Stake @entity {
   id: ID! #stakeId
 
   owner: Bytes
-  amount: BigInt
-  shares: BigInt
+  amount: BigInt!
+  shares: BigInt!
   timestamp: BigInt
 
 }
 
  type User @entity {
   id: ID! # user address
-  userNumber: BigInt
-  createdAtTimestamp: BigInt
-  aveDepositTimestamp: BigInt
-  depositAmount: BigInt
-  withdrawAmount: BigInt
-  shares: BigInt
-  aveStakedShares: BigInt
+  userNumber: BigInt!
+  createdAtTimestamp: BigInt!
+  aveDepositTimestamp: BigInt!
+  depositAmount: BigInt!
+  withdrawAmount: BigInt!
+  shares: BigInt!
+  aveStakedShares: BigInt!
 }
 
 #type User @entity {

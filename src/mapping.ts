@@ -449,6 +449,7 @@ export function handleVaultUpdated(event: VaultUpdated): void {
 
     vault.positionCount = ZERO_BI
     vault.tradeCount = ZERO_BI
+    vault.txCount = ZERO_BI
 
   }
 

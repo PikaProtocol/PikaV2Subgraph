@@ -22,7 +22,7 @@ type Vault @entity {
   positionCount: BigInt!
   tradeCount: BigInt!
   txCount: BigInt!
-  liquidationCount: BigInt
+  liquidationCount: BigInt!
   userCount: BigInt!
 
   protocolReward: BigInt!
@@ -211,8 +211,8 @@ type VaultDayData @entity {
   positionCount: BigInt!
   tradeCount: BigInt!
   txCount: BigInt!
-  liquidatorReward: BigInt
-  remainingReward: BigInt
+  liquidatorReward: BigInt!
+  remainingReward: BigInt!
 }
 
 type Stake @entity {

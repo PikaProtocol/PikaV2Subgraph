@@ -61,6 +61,8 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
     vaultDayData.positionCount = ZERO_BI
     vaultDayData.tradeCount = ZERO_BI
     vaultDayData.txCount = ZERO_BI
+    vaultDayData.liquidatorReward = ZERO_BI
+    vaultDayData.remainingReward = ZERO_BI
     vaultDayData.save()
   }
 
@@ -493,7 +495,6 @@ export function handleVaultUpdated(event: VaultUpdated): void {
     vault.createdAtTimestamp = event.block.timestamp
     vault.createdAtBlockNumber = event.block.number
 
-    vault.userCount = ZERO_BI
     vault.balance = ZERO_BI
     vault.staked = ZERO_BI
     vault.shares = ZERO_BI
@@ -509,6 +510,8 @@ export function handleVaultUpdated(event: VaultUpdated): void {
     vault.pikaReward = ZERO_BI
     vault.vaultReward = ZERO_BI
     vault.txCount = ZERO_BI
+    vault.liquidationCount = ZERO_BI
+    vault.userCount = ZERO_BI
   }
 
   vault.updatedAtTimestamp = event.block.timestamp
@@ -671,31 +674,31 @@ export function handleVaultRewardDistributed(event: VaultRewardDistributed): voi
   vault.save()
 }
 
-// export function handlePositionLiquidated(event: PositionLiquidated): void {
-//   let vault = Vault.load((1).toString())
-//   if (!vault) return
-//   let liquidation = new Liquidation(vault.liquidationCount.toString())
-//
-//   liquidation.txHash = event.transaction.hash.toHexString()
-//   liquidation.positionId = event.params.positionId
-//   liquidation.liquidator = event.params.liquidator
-//   liquidation.liquidatorReward = event.params.liquidatorReward
-//   liquidation.remainingReward = event.params.remainingReward
-//
-//   liquidation.timestamp = event.block.timestamp
-//   liquidation.blockNumber = event.block.number
-//   vault.liquidationCount = vault.liquidationCount.plus(ONE_BI)
-//
-//   let vaultDayData = getVaultDayData(event)
-//   vaultDayData.liquidatorReward = vaultDayData.liquidatorReward + event.params.liquidatorReward
-//   vaultDayData.remainingReward = vaultDayData.remainingReward + event.params.remainingReward
-//
-//   vault.save()
-//   liquidation.save()
-//   vaultDayData.save()
-// }
-//
-// export function handleOwnerUpdated(event: OwnerUpdated): void {}
-//
-//
+export function handlePositionLiquidated(event: PositionLiquidated): void {
+  let vault = Vault.load((1).toString())
+  if (!vault) return
+  let liquidation = new Liquidation(vault.liquidationCount.toString())
+
+  liquidation.txHash = event.transaction.hash.toHexString()
+  liquidation.positionId = event.params.positionId
+  liquidation.liquidator = event.params.liquidator
+  liquidation.liquidatorReward = event.params.liquidatorReward
+  liquidation.remainingReward = event.params.remainingReward
+
+  liquidation.timestamp = event.block.timestamp
+  liquidation.blockNumber = event.block.number
+  vault.liquidationCount = vault.liquidationCount.plus(ONE_BI)
+
+  let vaultDayData = getVaultDayData(event)
+  vaultDayData.liquidatorReward = vaultDayData.liquidatorReward.plus(event.params.liquidatorReward)
+  vaultDayData.remainingReward = vaultDayData.remainingReward.plus(event.params.remainingReward)
+
+  vault.save()
+  liquidation.save()
+  vaultDayData.save()
+}
+
+export function handleOwnerUpdated(event: OwnerUpdated): void {}
+
+
 

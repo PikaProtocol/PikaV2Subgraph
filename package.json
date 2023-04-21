@@ -4,10 +4,10 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --product hosted-service ethandev0/pikatradingcontest",
-    "create-local": "graph create --node http://localhost:8020/ ethandev0/pikatradingcontest",
-    "remove-local": "graph remove --node http://localhost:8020/ pikatradingcontest",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ethandev0/pikatradingcontest"
+    "deploy": "graph deploy --product hosted-service ethandev0/pikatradingcontest2",
+    "create-local": "graph create --node http://localhost:8020/ ethandev0/pikatradingcontest2",
+    "remove-local": "graph remove --node http://localhost:8020/ pikatradingcontest2",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ethandev0/pikatradingcontest2"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.46.1",

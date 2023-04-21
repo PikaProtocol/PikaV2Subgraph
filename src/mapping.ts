@@ -41,7 +41,6 @@ export const TWO_BI = BigInt.fromI32(2)
 export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
-export const YEAR_BI = BigInt.fromI32(31536000)
 export const START_TIME = BigInt.fromI32(1681718400)
 export const END_TIME = BigInt.fromI32(1682928000)
 function getVaultDayData(event: ethereum.Event): VaultDayData {
@@ -59,6 +58,7 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
     vaultDayData.cumulativeFee = ZERO_BI
     vaultDayData.positionCount = ZERO_BI
     vaultDayData.tradeCount = ZERO_BI
+    vaultDayData.txCount = ZERO_BI
     vaultDayData.liquidatorReward = ZERO_BI
     vaultDayData.remainingReward = ZERO_BI
     vaultDayData.save()
@@ -177,9 +177,17 @@ export function handleNewPosition(event: NewPosition): void {
       vault.userCount = vault.userCount.plus(ONE_BI)
       user.userNumber = vault.userCount
       user.createdAtTimestamp = event.block.timestamp
+      user.depositAmount = ZERO_BI
+      user.withdrawAmount = ZERO_BI
+      user.shares = ZERO_BI
+      user.reward = ZERO_BI
+      user.remainingAmount = ZERO_BI
+      user.netAmount = ZERO_BI
+      user.netAmountWithReward = ZERO_BI
       user.tradeCount = ONE_BI
       user.volume = singleAmount
       user.fees = singleAmount.times(product.fee).div(FEE_BI)
+      user.pnl = ZERO_BI
     } else {
       user.tradeCount = user.tradeCount.plus(ONE_BI)
       user.volume = user.volume.plus(singleAmount)
@@ -402,6 +410,17 @@ export function handleClosePosition(event: ClosePosition): void {
         vault.userCount = vault.userCount.plus(ONE_BI)
         user.userNumber = vault.userCount
         user.createdAtTimestamp = event.block.timestamp
+        user.depositAmount = ZERO_BI
+        user.withdrawAmount = ZERO_BI
+        user.shares = ZERO_BI
+        user.reward = ZERO_BI
+        user.remainingAmount = ZERO_BI
+        user.netAmount = ZERO_BI
+        user.netAmountWithReward = ZERO_BI
+        user.tradeCount = ZERO_BI
+        user.volume = ZERO_BI
+        user.fees = ZERO_BI
+        user.pnl = ZERO_BI
       }
       // Update user data
       user.tradeCount = user.tradeCount.plus(ONE_BI)
@@ -559,7 +578,16 @@ export function handleStaked(event: Staked): void {
     user.userNumber = vault.userCount
     user.createdAtTimestamp = event.block.timestamp
     user.depositAmount = event.params.amount
+    user.withdrawAmount = ZERO_BI
     user.shares = event.params.shares
+    user.reward = ZERO_BI
+    user.remainingAmount = ZERO_BI
+    user.netAmount = ZERO_BI
+    user.netAmountWithReward = ZERO_BI
+    user.tradeCount = ONE_BI
+    user.volume = ZERO_BI
+    user.fees = ZERO_BI
+    user.pnl = ZERO_BI
   } else {
     user.depositAmount = user.depositAmount.plus(event.params.amount)
     user.shares = user.shares.plus(event.params.shares)

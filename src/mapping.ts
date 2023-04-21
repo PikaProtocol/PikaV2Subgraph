@@ -441,6 +441,7 @@ export function handleVaultUpdated(event: VaultUpdated): void {
     vault.cumulativePnl = ZERO_BI
     vault.cumulativeVolume = ZERO_BI
     vault.cumulativeMargin = ZERO_BI
+    vault.cumulativeFee = ZERO_BI
 
     vault.liquidationCount = ZERO_BI
     vault.vaultReward = ZERO_BI

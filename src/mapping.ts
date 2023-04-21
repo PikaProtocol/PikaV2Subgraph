@@ -139,6 +139,7 @@ export function handleNewPosition(event: NewPosition): void {
     user.createdAtTimestamp = event.block.timestamp
     user.depositAmount = ZERO_BI
     user.withdrawAmount = ZERO_BI
+    user.shares = ZERO_BI
     user.reward = ZERO_BI
     user.netAmount = ZERO_BI
     user.netAmountWithReward = ZERO_BI

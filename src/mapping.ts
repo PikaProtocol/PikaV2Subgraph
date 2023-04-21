@@ -447,6 +447,7 @@ export function handleVaultUpdated(event: VaultUpdated): void {
     vault.vaultReward = ZERO_BI
     vault.pikaReward = ZERO_BI
 
+    vault.protocolReward = ZERO_BI
     vault.positionCount = ZERO_BI
     vault.tradeCount = ZERO_BI
     vault.txCount = ZERO_BI

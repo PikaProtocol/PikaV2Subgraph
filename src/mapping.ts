@@ -69,10 +69,6 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
 }
 
 export function handleNewPosition(event: NewPosition): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
-
   let vault = Vault.load((1).toString())
 
   if (!vault) return
@@ -99,14 +95,6 @@ export function handleNewPosition(event: NewPosition): void {
   let singleAmount = ZERO_BI
   let singleMargin = ZERO_BI
   if (!position) {
-    let perpContract = PikaPerpV3.bind(
-        Address.fromString("0xD5A8f233CBdDb40368D55C3320644Fb36e597002")
-    );
-    let activePosition = perpContract.getPosition(event.params.user, event.params.productId, event.params.isLong);
-    if ((activePosition.value0 as BigInt).equals(BigInt.fromI32(0))) {
-      log.info("new position not qualified {}", [event.address.toHexString()])
-      return
-    }
     position = new Position(event.params.positionId.toString())
     singleAmount = amount
     singleMargin = event.params.margin
@@ -196,8 +184,9 @@ export function handleNewPosition(event: NewPosition): void {
 
     user.save()
   }
-
-  transaction.save()
+  if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME) {
+    transaction.save()
+  }
   position.save()
   vault.save()
   vaultDayData.save()
@@ -206,10 +195,6 @@ export function handleNewPosition(event: NewPosition): void {
 }
 
 export function handleAddMargin(event: AddMargin): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
-
   let position = Position.load(event.params.positionId.toString())
 
   if (position) {
@@ -263,9 +248,6 @@ export function handleAddMargin(event: AddMargin): void {
 }
 
 export function handleClosePosition(event: ClosePosition): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
   let product = Product.load((event.params.productId).toString())
 
   let position = Position.load(event.params.positionId.toString())
@@ -546,194 +528,4 @@ export function handleVaultUpdated(event: VaultUpdated): void {
   vault.save()
 
 }
-
-export function handleStaked(event: Staked): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
-  let vault = Vault.load((1).toString())
-  if (!vault) return
-  vault.balance = vault.balance.plus(event.params.amount)
-  vault.staked = vault.staked.plus(event.params.amount)
-  vault.shares = vault.shares.plus(event.params.shares)
-
-  let stake = Stake.load(event.params.user.toHexString())
-
-  if (stake == null) {
-    // create stake
-    stake = new Stake(event.params.user.toHexString())
-
-    stake.amount = event.params.amount
-    stake.shares = event.params.shares
-  } else {
-    stake.amount = stake.amount.plus(event.params.amount)
-    stake.shares = stake.shares.plus(event.params.shares)
-  }
-  stake.timestamp = event.block.timestamp
-
-  let user = User.load(event.params.user.toHexString())
-  if (!user) {
-    user = new User(event.params.user.toHexString())
-    vault.userCount = vault.userCount.plus(ONE_BI)
-    user.userNumber = vault.userCount
-    user.createdAtTimestamp = event.block.timestamp
-    user.depositAmount = event.params.amount
-    user.withdrawAmount = ZERO_BI
-    user.shares = event.params.shares
-    user.reward = ZERO_BI
-    user.remainingAmount = ZERO_BI
-    user.netAmount = ZERO_BI
-    user.netAmountWithReward = ZERO_BI
-    user.tradeCount = ONE_BI
-    user.volume = ZERO_BI
-    user.fees = ZERO_BI
-    user.pnl = ZERO_BI
-  } else {
-    user.depositAmount = user.depositAmount.plus(event.params.amount)
-    user.shares = user.shares.plus(event.params.shares)
-  }
-  user.netAmount = user.withdrawAmount.minus(user.depositAmount as BigInt)
-  user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
-
-  stake.save()
-  user.save()
-  vault.save()
-
-}
-
-export function handleRedeemed(event: Redeemed): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
-  let vault = Vault.load((1).toString())
-  if (!vault) return
-  vault.staked = vault.staked.minus(event.params.amount)
-  vault.shares = vault.shares.minus(event.params.shares)
-  vault.balance = vault.balance.minus(event.params.shareBalance)
-  vault.save()
-
-  let stake = Stake.load(event.params.user.toHexString())
-
-  if (stake != null && event.params.isFullRedeem) {
-    store.remove('Stake', event.params.user.toHexString())
-  } else if (stake != null) {
-    stake.amount = stake.amount.minus(event.params.amount)
-    stake.shares = stake.shares.minus(event.params.shares)
-    stake.save()
-  }
-
-  let user = User.load(event.params.user.toHexString())
-  if (!user) {
-    return
-  }
-  user.shares = user.shares.minus(event.params.shares)
-  user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
-  user.netAmount = user.depositAmount ?
-      user.withdrawAmount.minus(user.depositAmount as BigInt) : ZERO_BI
-  // let vaultFeeRewardAddress = event.address.toHexString();
-  // let vaultFeeRewardContract = VaultFeeReward.bind(
-  //     Address.fromString("0x58488bB666d2da33F8E8938Dbdd582D2481D4183")
-  // );
-  // user.reward = user.reward ? vaultFeeRewardContract.getClaimableReward(event.params.user).plus(user.reward as BigInt) :
-  //     vaultFeeRewardContract.getClaimableReward(event.params.user)
-  user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
-  user.save()
-}
-
-export function handleClaimedReward(event: ClaimedReward): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
-  let user = User.load(event.params.user.toHexString())
-  if (!user) {
-    return
-  }
-  // let vaultFeeRewardAddress = event.address.toHexString();
-  // let vaultFeeRewardContract = VaultFeeReward.bind(
-  //     Address.fromString(vaultFeeRewardAddress)
-  // );
-  user.reward = user.reward ? (event.params.amount.times(HUNDRED_BI)).plus(user.reward as BigInt) : event.params.amount.times(HUNDRED_BI)
-  user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
-  user.save()
-}
-
-export function handleReinvested(event: Reinvested): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
-  let user = User.load(event.params.user.toHexString())
-  if (!user) {
-    return
-  }
-  // let vaultFeeRewardAddress = event.address.toHexString();
-  // let vaultFeeRewardContract = VaultFeeReward.bind(
-  //     Address.fromString(vaultFeeRewardAddress)
-  // );
-  user.reward = user.reward ? (event.params.amount.times(HUNDRED_BI)).plus(user.reward as BigInt) : event.params.amount.times(HUNDRED_BI)
-  user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
-  user.save()
-}
-
-export function handleProtocolRewardDistributed(event: ProtocolRewardDistributed): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
-  let vault = Vault.load((1).toString())
-  if (!vault) return
-  vault.protocolReward = vault.protocolReward.plus(event.params.amount)
-  vault.save()
-}
-
-export function handlePikaRewardDistributed(event: PikaRewardDistributed): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
-  let vault = Vault.load((1).toString())
-  if (!vault) return
-  vault.pikaReward = vault.pikaReward.plus(event.params.amount)
-  vault.save()
-}
-
-export function handleVaultRewardDistributed(event: VaultRewardDistributed): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
-  let vault = Vault.load((1).toString())
-  if (!vault) return
-  vault.vaultReward = vault.vaultReward.plus(event.params.amount)
-  vault.save()
-}
-
-export function handlePositionLiquidated(event: PositionLiquidated): void {
-  if (event.block.timestamp < START_TIME || event.block.timestamp > END_TIME) {
-    return
-  }
-  let vault = Vault.load((1).toString())
-  if (!vault) {
-    return
-  }
-  let liquidation = new Liquidation(vault.liquidationCount.toString())
-
-  liquidation.txHash = event.transaction.hash.toHexString()
-  liquidation.positionId = event.params.positionId
-  liquidation.liquidator = event.params.liquidator
-  liquidation.liquidatorReward = event.params.liquidatorReward
-  liquidation.remainingReward = event.params.remainingReward
-
-  liquidation.timestamp = event.block.timestamp
-  liquidation.blockNumber = event.block.number
-  vault.liquidationCount = vault.liquidationCount.plus(ONE_BI)
-
-  let vaultDayData = getVaultDayData(event)
-  vaultDayData.liquidatorReward = vaultDayData.liquidatorReward + event.params.liquidatorReward
-  vaultDayData.remainingReward = vaultDayData.remainingReward + event.params.remainingReward
-
-  vault.save()
-  liquidation.save()
-  vaultDayData.save()
-}
-
-export function handleOwnerUpdated(event: OwnerUpdated): void {}
-
-
 

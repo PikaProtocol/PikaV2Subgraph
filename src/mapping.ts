@@ -169,6 +169,8 @@ export function handleNewPosition(event: NewPosition): void {
       user.shares = ZERO_BI
       user.aveDepositTimestamp = ZERO_BI
       user.aveStakedShares = ZERO_BI
+      user.netAmount = ZERO_BI
+      user.netAmountWithReward = ZERO_BI
       user.tradeCount = ONE_BI
       user.volume = singleAmount
       user.fees = singleAmount.times(product.fee).div(FEE_BI)

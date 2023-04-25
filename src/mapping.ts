@@ -184,7 +184,7 @@ export function handleNewPosition(event: NewPosition): void {
 
     user.save()
   }
-  if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME) {
+  if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME && position.createdAtTimestamp >= START_TIME) {
     transaction.save()
   }
   position.save()

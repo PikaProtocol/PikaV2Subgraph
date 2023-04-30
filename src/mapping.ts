@@ -75,8 +75,10 @@ export function handleNewPosition(event: NewPosition): void {
 
   let product = Product.load((event.params.productId).toString())
   if (!product) return
+  vault.txCount = vault.txCount.plus(ONE_BI)
   // create transaction
-  let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "0")
+  let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + vault.txCount.toString() + "0")
+  transaction.count = vault.txCount
   transaction.txHash = event.transaction.hash.toHexString()
   transaction.positionId = event.params.positionId
   transaction.owner = event.params.user
@@ -94,21 +96,25 @@ export function handleNewPosition(event: NewPosition): void {
   let position = Position.load(event.params.positionId.toString())
   let singleAmount = ZERO_BI
   let singleMargin = ZERO_BI
+  let singleLeverage = ZERO_BI
   if (!position) {
     position = new Position(event.params.positionId.toString())
     singleAmount = amount
     singleMargin = event.params.margin
+    singleLeverage = event.params.leverage
     transaction.price = event.params.price
     position.createdAtTimestamp = event.block.timestamp
   } else {
     singleAmount = amount.minus(position.amount)
     singleMargin = event.params.margin.minus(position.margin)
+    singleLeverage = singleAmount.div(singleMargin)
     transaction.price = (event.params.price.times(amount).minus(position.price.times(position.amount))).div(singleAmount)
   }
   let tradeFee = event.params.fee
   transaction.tradeFee = tradeFee
   transaction.singleAmount = singleAmount
   transaction.singleMargin = singleMargin
+  transaction.singleLeverage = singleLeverage
   position.productId = event.params.productId
   position.leverage = event.params.leverage
   position.price = event.params.price
@@ -137,8 +143,6 @@ export function handleNewPosition(event: NewPosition): void {
   vault.cumulativeVolume = vault.cumulativeVolume.plus(singleAmount)
   vault.cumulativeMargin = vault.cumulativeMargin.plus(event.params.margin)
   vault.positionCount = vault.positionCount.plus(ONE_BI)
-  vault.txCount = vault.txCount.plus(ONE_BI)
-  transaction.count = vault.txCount
 
   let vaultDayData = getVaultDayData(event)
   vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(singleAmount)
@@ -263,7 +267,7 @@ export function handleClosePosition(event: ClosePosition): void {
     vault.txCount = vault.txCount.plus(ONE_BI)
 
     // create transaction
-    let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + "1")
+    let transaction = new Transaction(event.params.positionId.toString() + event.transaction.hash.toHex() + vault.txCount.toString() +"1")
     transaction.count = vault.txCount
     transaction.txHash = event.transaction.hash.toHexString()
     transaction.positionId = event.params.positionId

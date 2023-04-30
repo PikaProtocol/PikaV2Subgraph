@@ -105,6 +105,7 @@ type Transaction @entity { # open or close
   margin: BigInt!
   singleMargin: BigInt!
   leverage: BigInt!
+  singleLeverage: BigInt!
 
   amount: BigInt!
   singleAmount: BigInt!

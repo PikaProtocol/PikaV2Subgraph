@@ -47,7 +47,7 @@ function _getId(account: Address, isOpen: boolean, index: BigInt): string {
     return id
 }
 
-function _storeActivity(account: Address, action: String, order: Order, marketOrder: MarketOrder, txHash: String, timestamp: BigInt): void {
+function _storeActivity(account: Address, action: String, order: Order | null, marketOrder: MarketOrder | null, txHash: String, timestamp: BigInt): void {
     let activity = new Activity(account.toHexString() + timestamp.toString() + action)
     activity.account = account.toHexString()
     activity.action = action
@@ -60,7 +60,7 @@ function _storeActivity(account: Address, action: String, order: Order, marketOr
         activity.size = order.size
         activity.triggerPrice = order.triggerPrice
         activity.triggerAboveThreshold = order.triggerAboveThreshold
-    } else {
+    } else if (marketOrder) {
         activity.type = "market"
         activity.margin = marketOrder.margin
         activity.productId = marketOrder.productId
@@ -105,7 +105,7 @@ function _handleCreateOrder(account: Address, isOpen: boolean, type: string, ind
                             triggerAboveThreshold: boolean, executionFee: BigInt, txHash: String, timestamp: BigInt): void {
     let id = _getId(account, isOpen, index)
     let order = new Order(id)
-
+    if (!order) return
     order.type = type
     order.account = account.toHexString()
     order.index = index
@@ -137,7 +137,7 @@ function _handleCreatePosition(account: Address, isOpen: boolean, index: BigInt,
                                blockNumber: BigInt, txHash: String, blockTime: BigInt): void {
     let id = _getId(account, isOpen, index)
     let order = new MarketOrder(id)
-
+    if (!order) return
     order.account = account.toHexString()
     order.index = index
     order.isLong = isLong
@@ -166,7 +166,7 @@ function _handleCreatePosition(account: Address, isOpen: boolean, index: BigInt,
 function _handleCancelOrder(account: Address, isOpen: boolean, index: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = Order.load(id)
-
+    if (!order) return
     order.status = "cancelled"
     order.cancelledTimestamp = timestamp.toI32()
 
@@ -204,7 +204,7 @@ function _handleCancelPosition(account: Address, isOpen: boolean, index: BigInt,
 function _handleExecuteOrder(account: Address, isOpen: boolean, index: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = Order.load(id)
-
+    if (!order) return
     order.status = "executed"
     order.executedTimestamp = timestamp.toI32()
 
@@ -242,7 +242,7 @@ function _handleUpdateOpenOrder(account: Address, type: string, index: BigInt, m
                             triggerPrice: BigInt, triggerAboveThreshold: boolean, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + "true" + "-" + index.toString()
     let order = Order.load(id)
-
+    if (!order) return
     order.type = type
     order.margin = margin
     order.leverage = leverage
@@ -260,7 +260,7 @@ function _handleUpdateCloseOrder(account: Address, index: BigInt, size: BigInt,
                                 triggerPrice: BigInt, triggerAboveThreshold: boolean, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + "false" + "-" + index.toString()
     let order = Order.load(id)
-
+    if (!order) return
     order.size = size
     order.triggerPrice = triggerPrice
     order.triggerAboveThreshold = triggerAboveThreshold

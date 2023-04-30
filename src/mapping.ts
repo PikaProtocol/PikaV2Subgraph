@@ -174,7 +174,6 @@ export function handleNewPosition(event: NewPosition): void {
       user.tradeCount = ONE_BI
       user.volume = singleAmount
       user.fees = singleAmount.times(product.fee).div(FEE_BI)
-      user.aveStakedShares = ZERO_BI
       user.tradeCount = ZERO_BI
       user.pnl = ZERO_BI
     } else {
@@ -572,7 +571,7 @@ export function handleStaked(event: Staked): void {
     if (user.shares.plus(event.params.shares).equals(ZERO_BI)) {
       user.aveDepositTimestamp = BigInt.fromI32(0)
     } else {
-      user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp as BigInt).plus
+      user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp).plus
       (event.params.shares.times(event.block.timestamp))).div(user.shares.plus(event.params.shares))
       user.depositAmount = user.depositAmount.plus(event.params.amount)
       user.shares = user.shares.plus(event.params.shares)
@@ -613,7 +612,7 @@ export function handleRedeemed(event: Redeemed): void {
     return
   }
   user.shares = user.shares.minus(event.params.shares)
-  user.aveStakedShares = user.aveStakedShares.plus((event.block.timestamp.minus(user.aveDepositTimestamp as BigInt)).times(event.params.shares).div(THIRTY_DAYS))
+  user.aveStakedShares = user.aveStakedShares.plus((event.block.timestamp.minus(user.aveDepositTimestamp)).times(event.params.shares).div(THIRTY_DAYS))
   user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
   user.netAmount = user.depositAmount ?
       user.withdrawAmount.minus(user.depositAmount as BigInt) : ZERO_BI

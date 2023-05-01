@@ -279,6 +279,7 @@ export function handleClosePosition(event: ClosePosition): void {
     transaction.amount = amount
     transaction.singleAmount = amount
     transaction.singleMargin = event.params.margin
+    transaction.singleLeverage = event.params.leverage
     transaction.price = event.params.price
     transaction.isLong = !position.isLong
     let tradeFee = event.params.fee

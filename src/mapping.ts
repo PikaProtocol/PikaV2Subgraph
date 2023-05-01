@@ -575,6 +575,7 @@ export function handleStaked(event: Staked): void {
     user.fees = ZERO_BI
     user.pnl = ZERO_BI
     user.reward = ZERO_BI
+    user.remainingAmount = ZERO_BI
   } else {
     if (user.shares.plus(event.params.shares).equals(ZERO_BI)) {
       user.aveDepositTimestamp = BigInt.fromI32(0)

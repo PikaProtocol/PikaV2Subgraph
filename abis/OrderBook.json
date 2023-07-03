@@ -30,6 +30,11 @@
         "internalType":"address",
         "name":"_feeCalculator",
         "type":"address"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_feeBase",
+        "type":"uint256"
       }
     ],
     "stateMutability":"nonpayable",
@@ -365,6 +370,18 @@
         "internalType":"uint256",
         "name":"orderTimestamp",
         "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"bytes32",
+        "name":"referralCode",
+        "type":"bytes32"
+      },
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"referral",
+        "type":"address"
       }
     ],
     "name":"ExecuteCloseOrder",
@@ -469,6 +486,18 @@
         "internalType":"uint256",
         "name":"orderTimestamp",
         "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"bytes32",
+        "name":"referralCode",
+        "type":"bytes32"
+      },
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"referral",
+        "type":"address"
       }
     ],
     "name":"ExecuteOpenOrder",
@@ -505,11 +534,81 @@
       {
         "indexed":false,
         "internalType":"address",
+        "name":"account",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"manager",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"bool",
+        "name":"isActive",
+        "type":"bool"
+      }
+    ],
+    "name":"SetAccountManager",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"manager",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"bool",
+        "name":"isActive",
+        "type":"bool"
+      }
+    ],
+    "name":"SetManager",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"referralStorage",
+        "type":"address"
+      }
+    ],
+    "name":"SetReferralStorage",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"address",
         "name":"admin",
         "type":"address"
       }
     ],
     "name":"UpdateAdmin",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"bool",
+        "name":"allowPublicKeeper",
+        "type":"bool"
+      }
+    ],
+    "name":"UpdateAllowPublicKeeper",
     "type":"event"
   },
   {
@@ -565,6 +664,19 @@
       }
     ],
     "name":"UpdateCloseOrder",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"feeBase",
+        "type":"uint256"
+      }
+    ],
+    "name":"UpdateFeeBase",
     "type":"event"
   },
   {
@@ -693,19 +805,6 @@
     "type":"event"
   },
   {
-    "anonymous":false,
-    "inputs":[
-      {
-        "indexed":false,
-        "internalType":"uint256",
-        "name":"tradeFee",
-        "type":"uint256"
-      }
-    ],
-    "name":"UpdateTradeFee",
-    "type":"event"
-  },
-  {
     "stateMutability":"payable",
     "type":"fallback"
   },
@@ -714,21 +813,6 @@
 
     ],
     "name":"BASE",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"FEE_BASE",
     "outputs":[
       {
         "internalType":"uint256",
@@ -756,6 +840,50 @@
   },
   {
     "inputs":[
+
+    ],
+    "name":"allowPublicKeeper",
+    "outputs":[
+      {
+        "internalType":"bool",
+        "name":"",
+        "type":"bool"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      },
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "name":"approvedManagers",
+    "outputs":[
+      {
+        "internalType":"bool",
+        "name":"",
+        "type":"bool"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
+        "name":"_account",
+        "type":"address"
+      },
       {
         "internalType":"uint256",
         "name":"_orderIndex",
@@ -783,6 +911,26 @@
       }
     ],
     "name":"cancelMultiple",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address[]",
+        "name":"_closeOrderAccounts",
+        "type":"address[]"
+      },
+      {
+        "internalType":"uint256[]",
+        "name":"_closeOrderIndexes",
+        "type":"uint256[]"
+      }
+    ],
+    "name":"cancelMultipleCloseOrder",
     "outputs":[
 
     ],
@@ -900,6 +1048,11 @@
   {
     "inputs":[
       {
+        "internalType":"address",
+        "name":"_account",
+        "type":"address"
+      },
+      {
         "internalType":"uint256",
         "name":"_productId",
         "type":"uint256"
@@ -934,6 +1087,11 @@
   },
   {
     "inputs":[
+      {
+        "internalType":"address",
+        "name":"_account",
+        "type":"address"
+      },
       {
         "internalType":"uint256",
         "name":"_productId",
@@ -1030,49 +1188,9 @@
   {
     "inputs":[
       {
-        "internalType":"address[]",
-        "name":"_openAddresses",
-        "type":"address[]"
-      },
-      {
-        "internalType":"uint256[]",
-        "name":"_openOrderIndexes",
-        "type":"uint256[]"
-      },
-      {
-        "internalType":"address[]",
-        "name":"_closeAddresses",
-        "type":"address[]"
-      },
-      {
-        "internalType":"uint256[]",
-        "name":"_closeOrderIndexes",
-        "type":"uint256[]"
-      },
-      {
-        "internalType":"address payable",
-        "name":"_feeReceiver",
-        "type":"address"
-      }
-    ],
-    "name":"executeOrders",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"address[]",
-        "name":"tokens",
-        "type":"address[]"
-      },
-      {
-        "internalType":"uint256[]",
-        "name":"prices",
-        "type":"uint256[]"
+        "internalType":"bytes[]",
+        "name":"_priceUpdateData",
+        "type":"bytes[]"
       },
       {
         "internalType":"address[]",
@@ -1104,7 +1222,22 @@
     "outputs":[
 
     ],
-    "stateMutability":"nonpayable",
+    "stateMutability":"payable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"feeBase",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
     "type":"function"
   },
   {
@@ -1271,6 +1404,25 @@
   },
   {
     "inputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "name":"managers",
+    "outputs":[
+      {
+        "internalType":"bool",
+        "name":"",
+        "type":"bool"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
 
     ],
     "name":"minExecutionFee",
@@ -1289,21 +1441,6 @@
 
     ],
     "name":"minTimeCancelDelay",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"minTimeExecuteDelay",
     "outputs":[
       {
         "internalType":"uint256",
@@ -1434,6 +1571,41 @@
   },
   {
     "inputs":[
+
+    ],
+    "name":"referralStorage",
+    "outputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
+        "name":"_manager",
+        "type":"address"
+      },
+      {
+        "internalType":"bool",
+        "name":"_isActive",
+        "type":"bool"
+      }
+    ],
+    "name":"setAccountManager",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
       {
         "internalType":"address",
         "name":"_admin",
@@ -1441,6 +1613,36 @@
       }
     ],
     "name":"setAdmin",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"bool",
+        "name":"_allowPublicKeeper",
+        "type":"bool"
+      }
+    ],
+    "name":"setAllowPublicKeeper",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"uint256",
+        "name":"_feeBase",
+        "type":"uint256"
+      }
+    ],
+    "name":"setFeeBase",
     "outputs":[
 
     ],
@@ -1500,6 +1702,26 @@
   {
     "inputs":[
       {
+        "internalType":"address",
+        "name":"_manager",
+        "type":"address"
+      },
+      {
+        "internalType":"bool",
+        "name":"_isActive",
+        "type":"bool"
+      }
+    ],
+    "name":"setManager",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
         "internalType":"uint256",
         "name":"_minExecutionFee",
         "type":"uint256"
@@ -1530,12 +1752,12 @@
   {
     "inputs":[
       {
-        "internalType":"uint256",
-        "name":"_minTimeExecuteDelay",
-        "type":"uint256"
+        "internalType":"address",
+        "name":"_oracle",
+        "type":"address"
       }
     ],
-    "name":"setMinTimeExecuteDelay",
+    "name":"setOracle",
     "outputs":[
 
     ],
@@ -1546,11 +1768,11 @@
     "inputs":[
       {
         "internalType":"address",
-        "name":"_oracle",
+        "name":"_referralStorage",
         "type":"address"
       }
     ],
-    "name":"setOracle",
+    "name":"setReferralStorage",
     "outputs":[
 
     ],

@@ -34,43 +34,25 @@
     "anonymous":false,
     "inputs":[
       {
-        "indexed":true,
-        "internalType":"uint256",
-        "name":"positionId",
-        "type":"uint256"
-      },
-      {
-        "indexed":true,
+        "indexed":false,
         "internalType":"address",
-        "name":"sender",
-        "type":"address"
-      },
-      {
-        "indexed":true,
-        "internalType":"address",
-        "name":"user",
+        "name":"oracle",
         "type":"address"
       },
       {
         "indexed":false,
-        "internalType":"uint256",
-        "name":"margin",
-        "type":"uint256"
+        "internalType":"address",
+        "name":"feeCalculator",
+        "type":"address"
       },
       {
         "indexed":false,
-        "internalType":"uint256",
-        "name":"newMargin",
-        "type":"uint256"
-      },
-      {
-        "indexed":false,
-        "internalType":"uint256",
-        "name":"newLeverage",
-        "type":"uint256"
+        "internalType":"address",
+        "name":"fundingManager",
+        "type":"address"
       }
     ],
-    "name":"AddMargin",
+    "name":"AddressesSet",
     "type":"event"
   },
   {
@@ -152,11 +134,73 @@
       {
         "indexed":false,
         "internalType":"address",
+        "name":"newGov",
+        "type":"address"
+      }
+    ],
+    "name":"GovUpdated",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":false,
+        "internalType":"address",
         "name":"newGuardian",
         "type":"address"
       }
     ],
     "name":"GuardianUpdated",
+    "type":"event"
+  },
+  {
+    "anonymous":false,
+    "inputs":[
+      {
+        "indexed":true,
+        "internalType":"uint256",
+        "name":"positionId",
+        "type":"uint256"
+      },
+      {
+        "indexed":true,
+        "internalType":"address",
+        "name":"sender",
+        "type":"address"
+      },
+      {
+        "indexed":true,
+        "internalType":"address",
+        "name":"user",
+        "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"margin",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"newMargin",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"uint256",
+        "name":"newLeverage",
+        "type":"uint256"
+      },
+      {
+        "indexed":false,
+        "internalType":"bool",
+        "name":"shouldIncrease",
+        "type":"bool"
+      }
+    ],
+    "name":"ModifyMargin",
     "type":"event"
   },
   {
@@ -225,7 +269,7 @@
       {
         "indexed":false,
         "internalType":"int256",
-        "name":"fundingRate",
+        "name":"funding",
         "type":"int256"
       }
     ],
@@ -353,7 +397,7 @@
           }
         ],
         "indexed":false,
-        "internalType":"struct PikaPerpV3.Product",
+        "internalType":"struct PikaPerpV4.Product",
         "name":"product",
         "type":"tuple"
       }
@@ -419,7 +463,7 @@
           }
         ],
         "indexed":false,
-        "internalType":"struct PikaPerpV3.Product",
+        "internalType":"struct PikaPerpV4.Product",
         "name":"product",
         "type":"tuple"
       }
@@ -565,33 +609,13 @@
           }
         ],
         "indexed":false,
-        "internalType":"struct PikaPerpV3.Vault",
+        "internalType":"struct PikaPerpV4.Vault",
         "name":"vault",
         "type":"tuple"
       }
     ],
     "name":"VaultUpdated",
     "type":"event"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"uint256",
-        "name":"positionId",
-        "type":"uint256"
-      },
-      {
-        "internalType":"uint256",
-        "name":"margin",
-        "type":"uint256"
-      }
-    ],
-    "name":"addMargin",
-    "outputs":[
-
-    ],
-    "stateMutability":"payable",
-    "type":"function"
   },
   {
     "inputs":[
@@ -648,7 +672,7 @@
             "type":"uint64"
           }
         ],
-        "internalType":"struct PikaPerpV3.Product",
+        "internalType":"struct PikaPerpV4.Product",
         "name":"_product",
         "type":"tuple"
       }
@@ -705,6 +729,11 @@
         "internalType":"bool",
         "name":"isLong",
         "type":"bool"
+      },
+      {
+        "internalType":"uint256",
+        "name":"oraclePrice",
+        "type":"uint256"
       }
     ],
     "name":"closePosition",
@@ -724,6 +753,11 @@
       {
         "internalType":"uint256",
         "name":"margin",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"oraclePrice",
         "type":"uint256"
       }
     ],
@@ -1049,7 +1083,7 @@
             "type":"uint80"
           }
         ],
-        "internalType":"struct PikaPerpV3.Position[]",
+        "internalType":"struct PikaPerpV4.Position[]",
         "name":"_positions",
         "type":"tuple[]"
       }
@@ -1168,7 +1202,7 @@
             "type":"uint128"
           }
         ],
-        "internalType":"struct PikaPerpV3.Stake",
+        "internalType":"struct PikaPerpV4.Stake",
         "name":"",
         "type":"tuple"
       }
@@ -1225,7 +1259,7 @@
             "type":"uint64"
           }
         ],
-        "internalType":"struct PikaPerpV3.Vault",
+        "internalType":"struct PikaPerpV4.Vault",
         "name":"",
         "type":"tuple"
       }
@@ -1276,21 +1310,6 @@
 
     ],
     "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-
-    ],
-    "name":"liquidationBounty",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
     "type":"function"
   },
   {
@@ -1409,6 +1428,31 @@
   {
     "inputs":[
       {
+        "internalType":"uint256",
+        "name":"positionId",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"margin",
+        "type":"uint256"
+      },
+      {
+        "internalType":"bool",
+        "name":"shouldIncrease",
+        "type":"bool"
+      }
+    ],
+    "name":"modifyMargin",
+    "outputs":[
+
+    ],
+    "stateMutability":"payable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
         "internalType":"address",
         "name":"",
         "type":"address"
@@ -1450,6 +1494,11 @@
       {
         "internalType":"uint256",
         "name":"leverage",
+        "type":"uint256"
+      },
+      {
+        "internalType":"uint256",
+        "name":"oraclePrice",
         "type":"uint256"
       }
     ],
@@ -1665,6 +1714,21 @@
     "inputs":[
       {
         "internalType":"address",
+        "name":"_gov",
+        "type":"address"
+      }
+    ],
+    "name":"setGov",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"address",
         "name":"_guardian",
         "type":"address"
       }
@@ -1786,16 +1850,6 @@
       {
         "internalType":"bool",
         "name":"_allowPublicLiquidator",
-        "type":"bool"
-      },
-      {
-        "internalType":"bool",
-        "name":"_isManagerOnlyForOpen",
-        "type":"bool"
-      },
-      {
-        "internalType":"bool",
-        "name":"_isManagerOnlyForClose",
         "type":"bool"
       },
       {
@@ -1991,7 +2045,7 @@
             "type":"uint64"
           }
         ],
-        "internalType":"struct PikaPerpV3.Product",
+        "internalType":"struct PikaPerpV4.Product",
         "name":"_product",
         "type":"tuple"
       }
@@ -2033,7 +2087,7 @@
             "type":"uint64"
           }
         ],
-        "internalType":"struct PikaPerpV3.Vault",
+        "internalType":"struct PikaPerpV4.Vault",
         "name":"_vault",
         "type":"tuple"
       }

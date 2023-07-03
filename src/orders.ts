@@ -35,12 +35,12 @@ import {
     Activity
 } from "../generated/schema"
 
-import { PikaPerpV3 } from "../generated/PikaPerpV3/PikaPerpV3";
+import { PikaPerpV4 } from "../generated/PikaPerpV4/PikaPerpV4";
 
 import {UNIT_BI} from "./mapping";
 
 export const BASE = BigInt.fromI32(100000000)
-export const PERP_ADDRESS = "0xD5A8f233CBdDb40368D55C3320644Fb36e597002";
+export const PERP_ADDRESS = "0x56B1103A375d6E12Be3bD9f23332558f570F7a8b";
 
 function _getId(account: Address, isOpen: boolean, index: BigInt): string {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
@@ -218,14 +218,13 @@ function _handleExecuteOrder(account: Address, isOpen: boolean, index: BigInt, t
     _storeActivity(account, action, order as Order, null, txHash, timestamp)
 }
 
-function _handleExecutePosition(account: Address, isOpen: boolean, index: BigInt,  blockGap: BigInt, timeGap: BigInt, txHash: String, timestamp: BigInt): void {
+function _handleExecutePosition(account: Address, isOpen: boolean, index: BigInt, timeGap: BigInt, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
     let order = MarketOrder.load(id)
     if (order == null) {
         return
     }
     order.status = "executed"
-    order.executedBlockGap = blockGap.toI32()
     order.executedTimeGap = timeGap.toI32()
 
     order.save()
@@ -316,7 +315,7 @@ export function handleCreateCloseOrder(event: CreateCloseOrder): void {
     } else {
         type = "stop"
     }
-    let perpContract = PikaPerpV3.bind(
+    let perpContract = PikaPerpV4.bind(
         Address.fromString(PERP_ADDRESS)
     );
     let position = perpContract.getPosition(event.params.account, event.params.productId, event.params.isLong);
@@ -354,12 +353,12 @@ export function handleCancelOpenPosition(event: CancelOpenPosition): void {
 }
 
 export function handleExecuteOpenPosition(event: ExecuteOpenPosition): void {
-    _handleExecutePosition(event.params.account, true, event.params.index, event.params.blockGap, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
+    _handleExecutePosition(event.params.account, true, event.params.index, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
     // _storeStats("executedOpenMarket", "createOpenMarket")
 }
 
 export function handleCreateClosePosition(event: CreateClosePosition): void {
-    let perpContract = PikaPerpV3.bind(
+    let perpContract = PikaPerpV4.bind(
         Address.fromString(PERP_ADDRESS)
     );
     let position = perpContract.getPosition(event.params.account, event.params.productId, event.params.isLong);
@@ -376,6 +375,6 @@ export function handleCancelClosePosition(event: CancelClosePosition): void {
 }
 
 export function handleExecuteClosePosition(event: ExecuteClosePosition): void {
-    _handleExecutePosition(event.params.account, false, event.params.index, event.params.blockGap, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
+    _handleExecutePosition(event.params.account, false, event.params.index, event.params.timeGap, event.transaction.hash.toHexString(), event.block.timestamp);
     // _storeStats("executedCloseMarket", "createCloseMarket")
 }

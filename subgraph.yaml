@@ -14,7 +14,7 @@ dataSources:
       apiVersion: 0.0.6
       language: wasm/assemblyscript
       entities:
-        - AddMargin
+        - ModifyMargin
         - ClosePosition
         - NewPosition
         - OwnerUpdated
@@ -32,7 +32,7 @@ dataSources:
           file: ./abis/PikaPerpV4.json
       eventHandlers:
         - event: ModifyMargin(indexed uint256,indexed address,indexed address,uint256,uint256,uint256,bool)
-          handler: handleAddMargin
+          handler: handleModifyMargin
         - event: ClosePosition(indexed uint256,indexed address,indexed uint256,uint256,uint256,uint256,uint256,uint256,int256,int256,bool)
           handler: handleClosePosition
         - event: NewPosition(indexed uint256,indexed address,indexed uint256,bool,uint256,uint256,uint256,uint256,uint256,bool,int256)

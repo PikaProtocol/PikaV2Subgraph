@@ -235,7 +235,11 @@ export function handleModifyMargin(event: ModifyMargin): void {
 
     let activity = new Activity(position.owner.toHexString() + event.block.timestamp.toString() + "Added margin")
     activity.account = event.params.user.toHexString()
-    activity.action = "Added margin"
+    if (event.params.shouldIncrease) {
+      activity.action = "Added margin"
+    } else {
+      activity.action = "Removed margin"
+    }
     activity.productId = position.productId
     activity.margin = event.params.margin
     activity.txHash = event.transaction.hash.toHexString()

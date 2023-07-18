@@ -155,9 +155,9 @@ export function handleNewPosition(event: NewPosition): void {
   product.positionCount = product.positionCount.plus(ONE_BI)
 
   if (position.isLong) {
-    product.openInterestLong = product.openInterestLong.plus(amount)
+    product.openInterestLong = product.openInterestLong.plus(singleAmount)
   } else {
-    product.openInterestShort = product.openInterestShort.plus(amount)
+    product.openInterestShort = product.openInterestShort.plus(singleAmount)
   }
 
   // Update user

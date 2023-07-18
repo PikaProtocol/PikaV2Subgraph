@@ -1,6 +1,6 @@
 import { Address, BigInt, store, log, ethereum } from "@graphprotocol/graph-ts"
 import {
-  AddMargin,
+  ModifyMargin,
   ClosePosition,
   NewPosition,
   OwnerUpdated,
@@ -13,7 +13,7 @@ import {
   ProtocolRewardDistributed,
   PikaRewardDistributed,
   VaultRewardDistributed,
-} from "../generated/PikaPerpV3/PikaPerpV3"
+} from "../generated/PikaPerpV4/PikaPerpV4"
 import {
   ClaimedReward,
   Reinvested
@@ -124,7 +124,7 @@ export function handleNewPosition(event: NewPosition): void {
   position.owner = event.params.user
 
   position.isLong = event.params.isLong
-  position.funding = event.params.fundingRate
+  position.funding = event.params.funding
 
   position.createdAtTimestamp = event.block.timestamp
   position.createdAtBlockNumber = event.block.number
@@ -198,7 +198,7 @@ export function handleNewPosition(event: NewPosition): void {
 
 }
 
-export function handleAddMargin(event: AddMargin): void {
+export function handleModifyMargin(event: ModifyMargin): void {
   let position = Position.load(event.params.positionId.toString())
 
   if (position) {

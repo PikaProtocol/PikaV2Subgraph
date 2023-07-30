@@ -30,7 +30,7 @@ import {
   User,
   Order,
   MarketOrder,
-  Activity
+  Activity, VaultEpochData
 } from "../generated/schema"
 import { VaultFeeReward } from "../generated/VaultFeeReward/VaultFeeReward"
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
@@ -45,6 +45,7 @@ export const YEAR_BI = BigInt.fromI32(31536000)
 export const START_TIME = BigInt.fromI32(1682899200)
 export const END_TIME = BigInt.fromI32(1685577600)
 export const THIRTY_DAYS = BigInt.fromI32(2592000)
+export const EPOCH_START_TIME = BigInt.fromI32(1690848000)
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
   let timestamp = event.block.timestamp.toI32()
@@ -67,6 +68,27 @@ function getVaultDayData(event: ethereum.Event): VaultDayData {
   }
 
   return vaultDayData!
+
+}
+
+function getVaultEpochData(event: ethereum.Event): VaultEpochData {
+
+  let timestamp = BigInt.fromI32(event.block.timestamp.toI32())
+  let epoch_id = ZERO_BI
+  if (timestamp.gt(EPOCH_START_TIME)) {
+    epoch_id = ((timestamp.minus(EPOCH_START_TIME)).div(THIRTY_DAYS)).plus(ONE_BI)
+  }
+  let vaultEpochData = VaultEpochData.load(epoch_id.toString())
+
+  if (vaultEpochData == null) {
+    vaultEpochData = new VaultEpochData(epoch_id.toString())
+    vaultEpochData.epoch = (epoch_id.times(THIRTY_DAYS)).plus(EPOCH_START_TIME)
+    vaultEpochData.cumulativeVolume = ZERO_BI
+    vaultEpochData.cumulativeFee = ZERO_BI
+    vaultEpochData.save()
+  }
+
+  return vaultEpochData!
 
 }
 
@@ -150,6 +172,10 @@ export function handleNewPosition(event: NewPosition): void {
   vaultDayData.positionCount = vaultDayData.positionCount.plus(ONE_BI)
   vaultDayData.txCount = vaultDayData.txCount.plus(ONE_BI)
 
+  let vaultEpochData = getVaultEpochData(event)
+  vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(singleAmount)
+  vaultDayData.cumulativeFee = vaultDayData.cumulativeFee.plus(tradeFee)
+
   product.cumulativeVolume = product.cumulativeVolume.plus(amount)
   product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)
   product.positionCount = product.positionCount.plus(ONE_BI)
@@ -194,6 +220,7 @@ export function handleNewPosition(event: NewPosition): void {
   position.save()
   vault.save()
   vaultDayData.save()
+  vaultEpochData.save()
   product.save()
 
 }
@@ -265,6 +292,7 @@ export function handleClosePosition(event: ClosePosition): void {
     let vault = Vault.load((1).toString())
     if (!vault) return
     let vaultDayData = getVaultDayData(event)
+    let vaultEpochData = getVaultEpochData(event)
     let product = Product.load((event.params.productId).toString())
     if (!product) return
     vault.tradeCount = vault.tradeCount.plus(ONE_BI)
@@ -364,7 +392,7 @@ export function handleClosePosition(event: ClosePosition): void {
       product.cumulativePnl = product.cumulativePnl.minus(event.params.pnl)
     } else {
       vault.cumulativePnl = vault.cumulativePnl.plus(event.params.pnl)
-      vault.balance = !trade.wasLiquidated ? vault.balance.minus(event.params.pnl) : vault.balance.plus(event.params.pnl)
+      vault.balance = vault.balance.minus(event.params.pnl)
       vaultDayData.cumulativePnl = vaultDayData.cumulativePnl.plus(event.params.pnl)
       product.cumulativePnl = product.cumulativePnl.plus(event.params.pnl)
     }
@@ -374,6 +402,9 @@ export function handleClosePosition(event: ClosePosition): void {
     vaultDayData.cumulativeFee = vaultDayData.cumulativeFee.plus(transaction.tradeFee)
     vaultDayData.tradeCount = vaultDayData.tradeCount.plus(ONE_BI)
     vaultDayData.txCount = vaultDayData.txCount.plus(ONE_BI)
+
+    vaultEpochData.cumulativeVolume = vaultEpochData.cumulativeVolume.plus(amount)
+    vaultEpochData.cumulativeFee = vaultEpochData.cumulativeFee.plus(transaction.tradeFee)
 
     product.cumulativeVolume = product.cumulativeVolume.plus(amount)
     product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)
@@ -430,6 +461,7 @@ export function handleClosePosition(event: ClosePosition): void {
     trade.save()
     vault.save()
     vaultDayData.save()
+    vaultEpochData.save()
     product.save()
 
   }

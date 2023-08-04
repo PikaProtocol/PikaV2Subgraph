@@ -42,10 +42,10 @@ export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31536000)
-export const START_TIME = BigInt.fromI32(1682899200)
-export const END_TIME = BigInt.fromI32(1685577600)
+export const START_TIME = BigInt.fromI32(1688169600)
+export const END_TIME = BigInt.fromI32(1690848000)
 export const THIRTY_DAYS = BigInt.fromI32(2592000)
-export const EPOCH_START_TIME = BigInt.fromI32(1690848000)
+export const EPOCH_START_TIME = BigInt.fromI32(1690876800)
 function getVaultDayData(event: ethereum.Event): VaultDayData {
 
   let timestamp = event.block.timestamp.toI32()
@@ -387,7 +387,11 @@ export function handleClosePosition(event: ClosePosition): void {
 
     if (trade.pnlIsNegative) {
       vault.cumulativePnl = vault.cumulativePnl.minus(event.params.pnl)
-      vault.balance = vault.balance.plus(event.params.pnl)
+      if (trade.wasLiquidated && ((event.params.pnl).plus(trade.margin).lt(ZERO_BI))) {
+        vault.balance = vault.balance.plus(trade.margin)
+      } else {
+        vault.balance = vault.balance.minus(event.params.pnl)
+      }
       vaultDayData.cumulativePnl = vaultDayData.cumulativePnl.minus(event.params.pnl)
       product.cumulativePnl = product.cumulativePnl.minus(event.params.pnl)
     } else {

@@ -205,12 +205,12 @@ export function handleNewPosition(event: NewPosition): void {
       user.netAmountWithReward = ZERO_BI
       user.tradeCount = ONE_BI
       user.volume = singleAmount
-      user.fees = singleAmount.times(product.fee).div(FEE_BI)
+      user.fees = tradeFee
       user.pnl = ZERO_BI
     } else {
       user.tradeCount = user.tradeCount.plus(ONE_BI)
       user.volume = user.volume.plus(singleAmount)
-      user.fees = user.fees.plus(singleAmount.times(product.fee).div(FEE_BI))
+      user.fees = user.fees.plus(tradeFee)
     }
 
     user.save()

@@ -216,6 +216,15 @@ type VaultDayData @entity {
   remainingReward: BigInt!
 }
 
+type VaultEpochData @entity {
+
+  id: ID! # epoch id
+  epoch: BigInt! # epochStartTimestamp = ID * 86400 * 30
+
+  cumulativeVolume: BigInt!
+  cumulativeFee: BigInt!
+}
+
 type Stake @entity {
 
   id: ID! #stakeId

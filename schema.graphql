@@ -145,6 +145,11 @@ type User @entity {
   pnl: BigInt!
 }
 
+type Staker @entity {
+  id: ID! # user address
+  amount: BigInt!
+}
+
 type Trade @entity { # closed position
 
   id: ID! # unique: vault.tradeCount.toString()

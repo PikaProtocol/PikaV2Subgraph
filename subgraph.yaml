@@ -166,3 +166,28 @@ dataSources:
           handler: handleExecuteClosePosition
 
       file: ./src/orders.ts
+
+  - kind: ethereum/contract
+    name: PikaStaking
+    network: optimism
+    source:
+      address: "0x323c8B8306d8d10D7FB78151b6D4Be6F160f240a"
+      abi: PikaStaking
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Withdrawn
+      abis:
+        - name: PikaStaking
+          file: ./abis/PikaStaking.json
+      eventHandlers:
+        - event: Staked(indexed address,uint256)
+          handler: handleStaked
+        - event: Withdrawn(indexed address,uint256,uint256)
+          handler: handleWithdrawn
+
+      file: ./src/staking.ts

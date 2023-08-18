@@ -173,8 +173,8 @@ export function handleNewPosition(event: NewPosition): void {
   vaultDayData.txCount = vaultDayData.txCount.plus(ONE_BI)
 
   let vaultEpochData = getVaultEpochData(event)
-  vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(singleAmount)
-  vaultDayData.cumulativeFee = vaultDayData.cumulativeFee.plus(tradeFee)
+  vaultEpochData.cumulativeVolume = vaultEpochData.cumulativeVolume.plus(singleAmount)
+  vaultEpochData.cumulativeFee = vaultEpochData.cumulativeFee.plus(tradeFee)
 
   product.cumulativeVolume = product.cumulativeVolume.plus(amount)
   product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)

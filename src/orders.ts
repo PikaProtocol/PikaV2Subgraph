@@ -48,7 +48,15 @@ function _getId(account: Address, isOpen: boolean, index: BigInt): string {
 }
 
 function _storeActivity(account: Address, action: String, order: Order | null, marketOrder: MarketOrder | null, txHash: String, timestamp: BigInt): void {
-    let activity = new Activity(account.toHexString() + timestamp.toString() + action)
+    let activityId: String
+    if (order) {
+        activityId = account.toHexString() + timestamp.toString() + action + order.type
+    } else if (marketOrder) {
+        activityId = account.toHexString() + timestamp.toString() + action + "market"
+    } else {
+        activityId = account.toHexString() + timestamp.toString() + action
+    }
+    let activity = new Activity(activityId)
     activity.account = account.toHexString()
     activity.action = action
     if (order) {

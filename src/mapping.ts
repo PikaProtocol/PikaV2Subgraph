@@ -129,7 +129,7 @@ export function handleNewPosition(event: NewPosition): void {
     singleAmount = amount.minus(position.amount)
     singleMargin = event.params.margin.minus(position.margin)
     singleLeverage = singleAmount.div(singleMargin)
-    transaction.price = (event.params.price.times(amount).minus(position.price.times(position.amount))).div(singleAmount)
+    transaction.price = singleAmount.times(UNIT_BI).div((position.amount.plus(singleAmount)).times(UNIT_BI).div(event.params.price).minus(position.amount.times(UNIT_BI).div(position.price)))
   }
   let tradeFee = event.params.fee
   transaction.tradeFee = tradeFee

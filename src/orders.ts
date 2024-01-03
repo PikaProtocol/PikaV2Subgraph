@@ -40,7 +40,7 @@ import { PikaPerpV4 } from "../generated/PikaPerpV4/PikaPerpV4";
 import {UNIT_BI} from "./mapping";
 
 export const BASE = BigInt.fromI32(100000000)
-export const PERP_ADDRESS = "0x56B1103A375d6E12Be3bD9f23332558f570F7a8b";
+export const PERP_ADDRESS = "0x9b86B2Be8eDB2958089E522Fe0eB7dD5935975AB";
 
 function _getId(account: Address, isOpen: boolean, index: BigInt): string {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()

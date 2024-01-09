@@ -173,8 +173,8 @@ export function handleNewPosition(event: NewPosition): void {
   vaultDayData.txCount = vaultDayData.txCount.plus(ONE_BI)
 
   let vaultEpochData = getVaultEpochData(event)
-  vaultDayData.cumulativeVolume = vaultDayData.cumulativeVolume.plus(singleAmount)
-  vaultDayData.cumulativeFee = vaultDayData.cumulativeFee.plus(tradeFee)
+  vaultEpochData.cumulativeVolume = vaultEpochData.cumulativeVolume.plus(singleAmount)
+  vaultEpochData.cumulativeFee = vaultEpochData.cumulativeFee.plus(tradeFee)
 
   product.cumulativeVolume = product.cumulativeVolume.plus(amount)
   product.cumulativeMargin = product.cumulativeMargin.plus(event.params.margin)
@@ -187,34 +187,34 @@ export function handleNewPosition(event: NewPosition): void {
   }
 
   // Update user
-  if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME) {
-    let user = User.load(event.params.user.toHexString())
-    if (!user) {
-      user = new User(event.params.user.toHexString())
-      vault.userCount = vault.userCount.plus(ONE_BI)
-      user.userNumber = vault.userCount
-      user.createdAtTimestamp = event.block.timestamp
-      user.depositAmount = ZERO_BI
-      user.withdrawAmount = ZERO_BI
-      user.shares = ZERO_BI
-      user.aveDepositTimestamp = ZERO_BI
-      user.aveStakedShares = ZERO_BI
-      user.reward = ZERO_BI
-      user.remainingAmount = ZERO_BI
-      user.netAmount = ZERO_BI
-      user.netAmountWithReward = ZERO_BI
-      user.tradeCount = ONE_BI
-      user.volume = singleAmount
-      user.fees = tradeFee
-      user.pnl = ZERO_BI
-    } else {
-      user.tradeCount = user.tradeCount.plus(ONE_BI)
-      user.volume = user.volume.plus(singleAmount)
-      user.fees = user.fees.plus(tradeFee)
-    }
-
-    user.save()
+  // if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME) {
+  let user = User.load(event.params.user.toHexString())
+  if (!user) {
+    user = new User(event.params.user.toHexString())
+    vault.userCount = vault.userCount.plus(ONE_BI)
+    user.userNumber = vault.userCount
+    user.createdAtTimestamp = event.block.timestamp
+    user.depositAmount = ZERO_BI
+    user.withdrawAmount = ZERO_BI
+    user.shares = ZERO_BI
+    user.aveDepositTimestamp = ZERO_BI
+    user.aveStakedShares = ZERO_BI
+    user.reward = ZERO_BI
+    user.remainingAmount = ZERO_BI
+    user.netAmount = ZERO_BI
+    user.netAmountWithReward = ZERO_BI
+    user.tradeCount = ONE_BI
+    user.volume = singleAmount
+    user.fees = tradeFee
+    user.pnl = ZERO_BI
+  } else {
+    user.tradeCount = user.tradeCount.plus(ONE_BI)
+    user.volume = user.volume.plus(singleAmount)
+    user.fees = user.fees.plus(tradeFee)
   }
+
+  user.save()
+  // }
 
   transaction.save()
   position.save()
@@ -428,38 +428,38 @@ export function handleClosePosition(event: ClosePosition): void {
       }
     }
 
-    if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME) {
-      // Update user
-      let user = User.load(event.params.user.toHexString())
-      if (!user) {
-        user = new User(event.params.user.toHexString())
-        vault.userCount = vault.userCount.plus(ONE_BI)
-        user.userNumber = vault.userCount
-        user.createdAtTimestamp = event.block.timestamp
-        user.depositAmount = ZERO_BI
-        user.withdrawAmount = ZERO_BI
-        user.aveDepositTimestamp = ZERO_BI
-        user.aveStakedShares = ZERO_BI
-        user.shares = ZERO_BI
-        user.reward = ZERO_BI
-        user.remainingAmount = ZERO_BI
-        user.netAmount = ZERO_BI
-        user.netAmountWithReward = ZERO_BI
-        user.tradeCount = ZERO_BI
-        user.volume = ZERO_BI
-        user.fees = ZERO_BI
-        user.pnl = ZERO_BI
-      }
-      // Update user data
-      user.tradeCount = user.tradeCount.plus(ONE_BI)
-      user.volume = user.volume.plus(amount)
-      if (!trade.wasLiquidated) {
-        user.fees = user.fees.plus(tradeFee)
-      }
-
-      user.pnl = user.pnl.plus(event.params.pnl)
-      user.save()
+    // if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME) {
+    // Update user
+    let user = User.load(event.params.user.toHexString())
+    if (!user) {
+      user = new User(event.params.user.toHexString())
+      vault.userCount = vault.userCount.plus(ONE_BI)
+      user.userNumber = vault.userCount
+      user.createdAtTimestamp = event.block.timestamp
+      user.depositAmount = ZERO_BI
+      user.withdrawAmount = ZERO_BI
+      user.aveDepositTimestamp = ZERO_BI
+      user.aveStakedShares = ZERO_BI
+      user.shares = ZERO_BI
+      user.reward = ZERO_BI
+      user.remainingAmount = ZERO_BI
+      user.netAmount = ZERO_BI
+      user.netAmountWithReward = ZERO_BI
+      user.tradeCount = ZERO_BI
+      user.volume = ZERO_BI
+      user.fees = ZERO_BI
+      user.pnl = ZERO_BI
     }
+    // Update user data
+    user.tradeCount = user.tradeCount.plus(ONE_BI)
+    user.volume = user.volume.plus(amount)
+    if (!trade.wasLiquidated) {
+      user.fees = user.fees.plus(tradeFee)
+    }
+
+    user.pnl = user.pnl.plus(event.params.pnl)
+    user.save()
+    // }
 
     transaction.save()
     trade.save()

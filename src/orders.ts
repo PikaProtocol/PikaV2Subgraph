@@ -40,7 +40,7 @@ import { PikaPerpV4 } from "../generated/PikaPerpV4/PikaPerpV4";
 import {UNIT_BI} from "./mapping";
 
 export const BASE = BigInt.fromI32(100000000)
-export const PERP_ADDRESS = "0x56B1103A375d6E12Be3bD9f23332558f570F7a8b";
+export const PERP_ADDRESS = "0x9b86B2Be8eDB2958089E522Fe0eB7dD5935975AB";
 
 function _getId(account: Address, isOpen: boolean, index: BigInt): string {
     let id = account.toHexString() + "-" + isOpen.toString() + "-" + index.toString()
@@ -48,7 +48,15 @@ function _getId(account: Address, isOpen: boolean, index: BigInt): string {
 }
 
 function _storeActivity(account: Address, action: String, order: Order | null, marketOrder: MarketOrder | null, txHash: String, timestamp: BigInt): void {
-    let activity = new Activity(account.toHexString() + timestamp.toString() + action)
+    let activityId: String
+    if (order) {
+        activityId = account.toHexString() + timestamp.toString() + action + order.type
+    } else if (marketOrder) {
+        activityId = account.toHexString() + timestamp.toString() + action + "market"
+    } else {
+        activityId = account.toHexString() + timestamp.toString() + action
+    }
+    let activity = new Activity(activityId)
     activity.account = account.toHexString()
     activity.action = action
     if (order) {
@@ -238,7 +246,7 @@ function _handleExecutePosition(account: Address, isOpen: boolean, index: BigInt
 }
 
 function _handleUpdateOpenOrder(account: Address, type: string, index: BigInt, margin: BigInt, leverage: BigInt, size: BigInt, tradeFee: BigInt,
-                            triggerPrice: BigInt, triggerAboveThreshold: boolean, txHash: String, timestamp: BigInt): void {
+                                triggerPrice: BigInt, triggerAboveThreshold: boolean, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + "true" + "-" + index.toString()
     let order = Order.load(id)
     if (!order) return
@@ -256,7 +264,7 @@ function _handleUpdateOpenOrder(account: Address, type: string, index: BigInt, m
 }
 
 function _handleUpdateCloseOrder(account: Address, index: BigInt, size: BigInt,
-                                triggerPrice: BigInt, triggerAboveThreshold: boolean, txHash: String, timestamp: BigInt): void {
+                                 triggerPrice: BigInt, triggerAboveThreshold: boolean, txHash: String, timestamp: BigInt): void {
     let id = account.toHexString() + "-" + "false" + "-" + index.toString()
     let order = Order.load(id)
     if (!order) return

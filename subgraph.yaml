@@ -87,7 +87,7 @@ dataSources:
     name: OrderBook
     network: optimism
     source:
-      address: "0x835a179a9E1A57f15823eFc82bC460Eb2D9d2E7C"
+      address: "0x6E8BE5e689eb390d88c82Fe9F0C538DfFc5F95d7"
       abi: OrderBook
       startBlock: 0
     mapping:
@@ -132,7 +132,7 @@ dataSources:
     name: PositionManager
     network: optimism
     source:
-      address: "0xB67c152E69217b5aCB85A2e19dF13423351b0E27"
+      address: "0xd27A9f2f7B91E3b12084f59dAC4b41D6DCA87847"
       abi: PositionManager
       startBlock: 0
     mapping:
@@ -166,3 +166,50 @@ dataSources:
           handler: handleExecuteClosePosition
 
       file: ./src/orders.ts
+
+  - kind: ethereum/contract
+    name: PikaStaking
+    network: optimism
+    source:
+      address: "0x323c8B8306d8d10D7FB78151b6D4Be6F160f240a"
+      abi: PikaStaking
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Staked
+        - Withdrawn
+      abis:
+        - name: PikaStaking
+          file: ./abis/PikaStaking.json
+      eventHandlers:
+        - event: Staked(indexed address,uint256)
+          handler: handleStaked
+        - event: Withdrawn(indexed address,uint256,uint256)
+          handler: handleWithdrawn
+
+      file: ./src/staking.ts
+
+  - kind: ethereum/contract
+    name: UserMapping
+    network: optimism
+    source:
+      address: "0xc412d5e42Fec1b38ac89FE3E677a509538D38b91"
+      abi: UserMapping
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - UserToProxy
+      abis:
+        - name: UserMapping
+          file: ./abis/UserMapping.json
+      eventHandlers:
+        - event: ProxySet(address,address)
+          handler: handleProxySet
+
+      file: ./src/userMapping.ts

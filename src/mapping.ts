@@ -42,8 +42,8 @@ export const HUNDRED_BI = BigInt.fromI32(100)
 export const UNIT_BI = BigInt.fromI32(100000000)
 export const FEE_BI = BigInt.fromI32(10000)
 export const YEAR_BI = BigInt.fromI32(31536000)
-export const START_TIME = BigInt.fromI32(0)
-export const END_TIME = BigInt.fromI32(2690848000)
+export const START_TIME = BigInt.fromI32(1701388800)
+export const END_TIME = BigInt.fromI32(1705431600)
 export const THIRTY_DAYS = BigInt.fromI32(2592000)
 export const EPOCH_START_TIME = BigInt.fromI32(1690876800)
 function getVaultDayData(event: ethereum.Event): VaultDayData {
@@ -598,39 +598,42 @@ export function handleStaked(event: Staked): void {
   stake.timestamp = event.block.timestamp
 
   let user = User.load(event.params.user.toHexString())
-  if (!user) {
-    user = new User(event.params.user.toHexString())
-    vault.userCount = vault.userCount.plus(ONE_BI)
-    user.userNumber = vault.userCount
-    user.createdAtTimestamp = event.block.timestamp
-    user.depositAmount = event.params.amount
-    user.withdrawAmount = ZERO_BI
-    user.shares = event.params.shares
-    user.aveStakedShares = ZERO_BI
-    user.aveDepositTimestamp = event.block.timestamp
-    user.netAmount = ZERO_BI
-    user.netAmountWithReward = ZERO_BI
-    user.tradeCount = ZERO_BI
-    user.volume = ZERO_BI
-    user.fees = ZERO_BI
-    user.pnl = ZERO_BI
-    user.reward = ZERO_BI
-    user.remainingAmount = ZERO_BI
-  } else {
-    if (user.shares.plus(event.params.shares).equals(ZERO_BI)) {
-      user.aveDepositTimestamp = BigInt.fromI32(0)
+  if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME) {
+    if (!user) {
+      user = new User(event.params.user.toHexString())
+      vault.userCount = vault.userCount.plus(ONE_BI)
+      user.userNumber = vault.userCount
+      user.createdAtTimestamp = event.block.timestamp
+      user.depositAmount = event.params.amount
+      user.withdrawAmount = ZERO_BI
+      user.shares = event.params.shares
+      user.aveStakedShares = ZERO_BI
+      user.aveDepositTimestamp = event.block.timestamp
+      user.netAmount = ZERO_BI
+      user.netAmountWithReward = ZERO_BI
+      user.tradeCount = ZERO_BI
+      user.volume = ZERO_BI
+      user.fees = ZERO_BI
+      user.pnl = ZERO_BI
+      user.reward = ZERO_BI
+      user.remainingAmount = ZERO_BI
     } else {
-      user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp).plus
-      (event.params.shares.times(event.block.timestamp))).div(user.shares.plus(event.params.shares))
-      user.depositAmount = user.depositAmount.plus(event.params.amount)
-      user.shares = user.shares.plus(event.params.shares)
+      if (user.shares.plus(event.params.shares).equals(ZERO_BI)) {
+        user.aveDepositTimestamp = BigInt.fromI32(0)
+      } else {
+        user.aveDepositTimestamp = (user.shares.times(user.aveDepositTimestamp).plus
+        (event.params.shares.times(event.block.timestamp))).div(user.shares.plus(event.params.shares))
+        user.depositAmount = user.depositAmount.plus(event.params.amount)
+        user.shares = user.shares.plus(event.params.shares)
+      }
     }
+    user.netAmount = user.withdrawAmount.minus(user.depositAmount as BigInt)
+    user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
+    user.save()
   }
-  user.netAmount = user.withdrawAmount.minus(user.depositAmount as BigInt)
-  user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
+
 
   stake.save()
-  user.save()
   vault.save()
 
 }
@@ -654,23 +657,26 @@ export function handleRedeemed(event: Redeemed): void {
     stake.save()
   }
 
-  let user = User.load(event.params.user.toHexString())
-  if (!user) {
-    return
+  if (event.block.timestamp >= START_TIME && event.block.timestamp < END_TIME) {
+    let user = User.load(event.params.user.toHexString())
+    if (!user) {
+      return
+    }
+    user.shares = user.shares.minus(event.params.shares)
+    user.aveStakedShares = user.aveStakedShares.plus((event.block.timestamp.minus(user.aveDepositTimestamp)).times(event.params.shares).div(THIRTY_DAYS))
+    user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
+    user.netAmount = user.depositAmount ?
+        user.withdrawAmount.minus(user.depositAmount as BigInt) : ZERO_BI
+    // let vaultFeeRewardAddress = event.address.toHexString();
+    // let vaultFeeRewardContract = VaultFeeReward.bind(
+    //     Address.fromString("0x58488bB666d2da33F8E8938Dbdd582D2481D4183")
+    // );
+    // user.reward = user.reward ? vaultFeeRewardContract.getClaimableReward(event.params.user).plus(user.reward as BigInt) :
+    //     vaultFeeRewardContract.getClaimableReward(event.params.user)
+    user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
+    user.save()
   }
-  user.shares = user.shares.minus(event.params.shares)
-  user.aveStakedShares = user.aveStakedShares.plus((event.block.timestamp.minus(user.aveDepositTimestamp)).times(event.params.shares).div(THIRTY_DAYS))
-  user.withdrawAmount = user.withdrawAmount.plus(event.params.shareBalance)
-  user.netAmount = user.depositAmount ?
-      user.withdrawAmount.minus(user.depositAmount as BigInt) : ZERO_BI
-  // let vaultFeeRewardAddress = event.address.toHexString();
-  // let vaultFeeRewardContract = VaultFeeReward.bind(
-  //     Address.fromString("0x58488bB666d2da33F8E8938Dbdd582D2481D4183")
-  // );
-  // user.reward = user.reward ? vaultFeeRewardContract.getClaimableReward(event.params.user).plus(user.reward as BigInt) :
-  //     vaultFeeRewardContract.getClaimableReward(event.params.user)
-  user.netAmountWithReward = user.reward ? user.netAmount.plus(user.reward as BigInt) : user.netAmount
-  user.save()
+
 }
 
 export function handleClaimedReward(event: ClaimedReward): void {

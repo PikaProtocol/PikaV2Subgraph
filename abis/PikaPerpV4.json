@@ -50,6 +50,12 @@
         "internalType":"address",
         "name":"fundingManager",
         "type":"address"
+      },
+      {
+        "indexed":false,
+        "internalType":"address",
+        "name":"pendingPnlManager",
+        "type":"address"
       }
     ],
     "name":"AddressesSet",
@@ -262,12 +268,6 @@
       },
       {
         "indexed":false,
-        "internalType":"bool",
-        "name":"isNextPrice",
-        "type":"bool"
-      },
-      {
-        "indexed":false,
         "internalType":"int256",
         "name":"funding",
         "type":"int256"
@@ -382,11 +382,6 @@
           },
           {
             "internalType":"uint32",
-            "name":"minPriceChange",
-            "type":"uint32"
-          },
-          {
-            "internalType":"uint32",
             "name":"weight",
             "type":"uint32"
           },
@@ -445,11 +440,6 @@
             "internalType":"uint64",
             "name":"openInterestShort",
             "type":"uint64"
-          },
-          {
-            "internalType":"uint32",
-            "name":"minPriceChange",
-            "type":"uint32"
           },
           {
             "internalType":"uint32",
@@ -655,11 +645,6 @@
             "internalType":"uint64",
             "name":"openInterestShort",
             "type":"uint64"
-          },
-          {
-            "internalType":"uint32",
-            "name":"minPriceChange",
-            "type":"uint32"
           },
           {
             "internalType":"uint32",
@@ -1073,14 +1058,9 @@
             "type":"bool"
           },
           {
-            "internalType":"bool",
-            "name":"isNextPrice",
-            "type":"bool"
-          },
-          {
-            "internalType":"uint80",
+            "internalType":"uint88",
             "name":"timestamp",
-            "type":"uint80"
+            "type":"uint88"
           }
         ],
         "internalType":"struct PikaPerpV4.Position[]",
@@ -1120,11 +1100,6 @@
         "internalType":"bool",
         "name":"",
         "type":"bool"
-      },
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
       },
       {
         "internalType":"uint256",
@@ -1412,21 +1387,6 @@
   },
   {
     "inputs":[
-
-    ],
-    "name":"minProfitTime",
-    "outputs":[
-      {
-        "internalType":"uint256",
-        "name":"",
-        "type":"uint256"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
       {
         "internalType":"uint256",
         "name":"positionId",
@@ -1448,25 +1408,6 @@
 
     ],
     "stateMutability":"payable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"address",
-        "name":"",
-        "type":"address"
-      }
-    ],
-    "name":"nextPriceManagers",
-    "outputs":[
-      {
-        "internalType":"bool",
-        "name":"",
-        "type":"bool"
-      }
-    ],
-    "stateMutability":"view",
     "type":"function"
   },
   {
@@ -1548,6 +1489,21 @@
 
     ],
     "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"pendingPnlManager",
+    "outputs":[
+      {
+        "internalType":"address",
+        "name":"",
+        "type":"address"
+      }
+    ],
+    "stateMutability":"view",
     "type":"function"
   },
   {
@@ -1670,6 +1626,11 @@
       {
         "internalType":"address",
         "name":"_fundingManager",
+        "type":"address"
+      },
+      {
+        "internalType":"address",
+        "name":"_pendingPnlManager",
         "type":"address"
       }
     ],
@@ -1799,26 +1760,6 @@
     "inputs":[
       {
         "internalType":"address",
-        "name":"_nextPriceManager",
-        "type":"address"
-      },
-      {
-        "internalType":"bool",
-        "name":"_isActive",
-        "type":"bool"
-      }
-    ],
-    "name":"setNextPriceManager",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"address",
         "name":"_owner",
         "type":"address"
       }
@@ -1835,11 +1776,6 @@
       {
         "internalType":"uint256",
         "name":"_maxShift",
-        "type":"uint256"
-      },
-      {
-        "internalType":"uint256",
-        "name":"_minProfitTime",
         "type":"uint256"
       },
       {
@@ -2028,11 +1964,6 @@
             "internalType":"uint64",
             "name":"openInterestShort",
             "type":"uint64"
-          },
-          {
-            "internalType":"uint32",
-            "name":"minPriceChange",
-            "type":"uint32"
           },
           {
             "internalType":"uint32",

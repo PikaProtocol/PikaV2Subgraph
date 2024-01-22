@@ -1,10 +1,10 @@
 {
-  "name": "PikaPerpV4",
+  "name": "pikaperpv4_new",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --product hosted-service ethandev0/pikaperpv4_optimism",
+    "deploy": "graph deploy --product hosted-service ethandev0/pikaperpv4_new",
     "create-local": "graph create --node http://localhost:8020/ ethandev0/PikaPerpV4",
     "remove-local": "graph remove --node http://localhost:8020/ PikaPerpV4",
     "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 ethandev0/PikaPerpV4"

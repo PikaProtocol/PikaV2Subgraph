@@ -1163,6 +1163,36 @@
   {
     "inputs":[
       {
+        "internalType":"bytes[]",
+        "name":"_priceUpdateData",
+        "type":"bytes[]"
+      },
+      {
+        "internalType":"address",
+        "name":"_address",
+        "type":"address"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_orderIndex",
+        "type":"uint256"
+      },
+      {
+        "internalType":"address payable",
+        "name":"_feeReceiver",
+        "type":"address"
+      }
+    ],
+    "name":"executeCloseOrderWithPrices",
+    "outputs":[
+
+    ],
+    "stateMutability":"payable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
         "internalType":"address",
         "name":"_address",
         "type":"address"
@@ -1183,6 +1213,36 @@
 
     ],
     "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"bytes[]",
+        "name":"_priceUpdateData",
+        "type":"bytes[]"
+      },
+      {
+        "internalType":"address",
+        "name":"_address",
+        "type":"address"
+      },
+      {
+        "internalType":"uint256",
+        "name":"_orderIndex",
+        "type":"uint256"
+      },
+      {
+        "internalType":"address payable",
+        "name":"_feeReceiver",
+        "type":"address"
+      }
+    ],
+    "name":"executeOpenOrderWithPrices",
+    "outputs":[
+
+    ],
+    "stateMutability":"payable",
     "type":"function"
   },
   {
@@ -1404,25 +1464,6 @@
   },
   {
     "inputs":[
-      {
-        "internalType":"address",
-        "name":"",
-        "type":"address"
-      }
-    ],
-    "name":"managers",
-    "outputs":[
-      {
-        "internalType":"bool",
-        "name":"",
-        "type":"bool"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
 
     ],
     "name":"minExecutionFee",
@@ -1441,6 +1482,21 @@
 
     ],
     "name":"minTimeCancelDelay",
+    "outputs":[
+      {
+        "internalType":"uint256",
+        "name":"",
+        "type":"uint256"
+      }
+    ],
+    "stateMutability":"view",
+    "type":"function"
+  },
+  {
+    "inputs":[
+
+    ],
+    "name":"minTimeExecuteDelay",
     "outputs":[
       {
         "internalType":"uint256",
@@ -1702,26 +1758,6 @@
   {
     "inputs":[
       {
-        "internalType":"address",
-        "name":"_manager",
-        "type":"address"
-      },
-      {
-        "internalType":"bool",
-        "name":"_isActive",
-        "type":"bool"
-      }
-    ],
-    "name":"setManager",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
         "internalType":"uint256",
         "name":"_minExecutionFee",
         "type":"uint256"
@@ -1743,6 +1779,21 @@
       }
     ],
     "name":"setMinTimeCancelDelay",
+    "outputs":[
+
+    ],
+    "stateMutability":"nonpayable",
+    "type":"function"
+  },
+  {
+    "inputs":[
+      {
+        "internalType":"uint256",
+        "name":"_minTimeExecuteDelay",
+        "type":"uint256"
+      }
+    ],
+    "name":"setMinTimeExecuteDelay",
     "outputs":[
 
     ],

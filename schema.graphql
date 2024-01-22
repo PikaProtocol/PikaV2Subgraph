@@ -44,7 +44,6 @@ type Product @entity {
   openInterestLong: BigInt!
   openInterestShort: BigInt!
 
-  minPriceChange: BigInt!
   weight: BigInt!
   reserve: BigInt!
 

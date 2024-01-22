@@ -499,7 +499,6 @@ export function handleProductAdded(event: ProductAdded): void {
     product.openInterestLong = ZERO_BI
     product.openInterestShort = ZERO_BI
 
-    product.minPriceChange = event.params.product.minPriceChange
     product.weight = event.params.product.weight
     product.reserve = event.params.product.reserve
 
@@ -524,7 +523,6 @@ export function handleProductUpdated(event: ProductUpdated): void {
 
     product.isActive = event.params.product.isActive
 
-    product.minPriceChange = event.params.product.minPriceChange
     product.weight = event.params.product.weight
     product.reserve = event.params.product.reserve
 

@@ -1615,25 +1615,6 @@
   },
   {
     "inputs":[
-      {
-        "internalType":"address",
-        "name":"",
-        "type":"address"
-      }
-    ],
-    "name":"managers",
-    "outputs":[
-      {
-        "internalType":"bool",
-        "name":"",
-        "type":"bool"
-      }
-    ],
-    "stateMutability":"view",
-    "type":"function"
-  },
-  {
-    "inputs":[
 
     ],
     "name":"maxTimeDelay",
@@ -2023,26 +2004,6 @@
       }
     ],
     "name":"setIsUserExecuteEnabled",
-    "outputs":[
-
-    ],
-    "stateMutability":"nonpayable",
-    "type":"function"
-  },
-  {
-    "inputs":[
-      {
-        "internalType":"address",
-        "name":"_manager",
-        "type":"address"
-      },
-      {
-        "internalType":"bool",
-        "name":"_isActive",
-        "type":"bool"
-      }
-    ],
-    "name":"setManager",
     "outputs":[
 
     ],
